@@ -1,14 +1,8 @@
-import os
-
-NES_MAGIC_BYTES = b"NES\x1a"
-
-
-# TODO: 0x8000 to 0xFFFF is read only
-class Memory:
+class CPUMemory:
     def __init__(self):
-        # 51208 bytes is the amount of actual bytes on the NES
+        # C808 bytes is the amount of actual bytes on the NES
         # the rest are mirrors that essentially pad out to 65536
-        self.ram = bytearray(51208)
+        self.ram = bytearray(0xC808)
 
     def read_byte(self, addr: int) -> int:
         if 0x0000 <= addr <= 0x1FFF:
@@ -22,7 +16,9 @@ class Memory:
         if 0x4020 <= addr <= 0xFFFF:
             return self.ram[addr - 0x4020 + 0x0828]
 
-        raise ValueError("Address passed to read_byte must be in range 0x0000-0xFFFF")
+        raise ValueError(
+            "Address passed to CPU read_byte must be in range 0x0000-0xFFFF"
+        )
 
     def read_word(self, addr: int) -> int:
         if 0x0000 <= addr <= 0x1FFF:
@@ -36,23 +32,37 @@ class Memory:
         if 0x4020 <= addr <= 0xFFFF:
             return self._raw_read_word(addr - 0x4020 + 0x0828)
 
-        raise ValueError("Address passed to read_word must be in range 0x0000-0xFFFF")
+        raise ValueError(
+            "Address passed to CPU read_word must be in range 0x0000-0xFFFF"
+        )
 
     def _raw_read_word(self, addr: int) -> int:
-        return self.ram[addr] << 8 | self.ram[addr + 1]
+        return (self.ram[addr + 1] << 8) | self.ram[addr]
 
-    def load_game_rom(self, path: str):
-        if os.path.getsize(path) < 16:
-            raise ValueError("Invalid game rom: must be at least 16 bytes")
 
-        contents = b""
-        with open(path, "rb") as handle:
-            contents = handle.read()
+class PPUMemory:
+    def __init__(self):
+        self.ram = bytearray(0x3F20)
 
-        if not contents[0:4] == NES_MAGIC_BYTES:
-            raise ValueError("Invalid game rom: must contain .nes magic bytes")
+    def read_byte(self, addr: int) -> int:
+        if 0x0000 <= addr <= 0x3F1F:
+            return self.ram[addr]
+        if 0x3F20 <= addr <= 0xFFFF:
+            return self.ram[((addr - 0x3F20) % 32) + 0x3F00]
 
-        prog_size = contents[4]
-        chr_size = contents[5]
+        raise ValueError(
+            "Address passed to PPU read_byte must be in range 0x0000-0xFFFF"
+        )
 
-        # TODO: this is more difficult than i expected
+    def read_word(self, addr: int) -> int:
+        if 0x0000 <= addr <= 0x3F1F:
+            return self._raw_read_word(addr)
+        if 0x3F20 <= addr <= 0xFFFF:
+            return self._raw_read_word(((addr - 0x3F20) % 32) + 0x3F00)
+
+        raise ValueError(
+            "Address passed to PPU read_word must be in range 0x0000-0xFFFF"
+        )
+
+    def _raw_read_word(self, addr: int) -> int:
+        return (self.ram[addr + 1] << 8) | self.ram[addr]

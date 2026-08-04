@@ -1,9 +1,10 @@
-from .memory import Memory
+from .memory import CPUMemory, PPUMemory
 
 
 class CPU:
     def __init__(self):
-        self.memory: Memory
+        self.memory: CPUMemory
+        self.ppumemory: PPUMemory
 
     def reset(self):
         self.pc = self.memory.read_word(0xFFFC)
@@ -11,4 +12,10 @@ class CPU:
     def step(self):
         opcode = self.memory.read_byte(self.pc)
 
-        print(opcode)
+        # match opcode:
+        #     case 0x4C:
+        #         # JMP abs
+        #
+        #     case _:
+        #         raise ValueError(f"unknown opcode: {hex(opcode)}")
+        # print(hex(opcode))
