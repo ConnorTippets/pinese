@@ -119,6 +119,15 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xA9:
+                # LDX imm
+                imm = self.read_pc_byte()
+
+                self.a = imm
+                self.set_flag(ZERO_FLAG, self.a == 0)
+                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xB0:
                 # BCS rel
                 rel = sign_convert_byte(self.read_pc_byte())
