@@ -145,6 +145,20 @@ class CPU:
             case 0xEA:
                 # NOP
                 cycles += 2
+            case 0xF0:
+                # BEQ rel
+                rel = sign_convert_byte(self.read_pc_byte())
+
+                cycles += 2
+
+                if self.p & ZERO_FLAG:
+                    self.pc += rel  # + 2 was handled already
+
+                    cycles += 1
+
+                    # page boundary crossed
+                    if not page_of(self.pc - rel) == page_of(self.pc):
+                        cycles += 1
             case 0xF8:
                 # SED
                 self.set_flag(DECIMAL_FLAG, 1)

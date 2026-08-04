@@ -85,6 +85,12 @@ class Emulator:
                 # NOP
                 disasm = "NOP"
                 length = 1
+            case 0xF0:
+                # BEQ rel
+                rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
+                addr = self.cpu.pc + 2 + rel
+                disasm = f"BEQ ${hex(addr).upper().replace("0X", ""):04}"
+                length = 2
             case 0xF8:
                 # SED
                 disasm = "SED"
