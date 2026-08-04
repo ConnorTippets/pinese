@@ -36,6 +36,11 @@ class Emulator:
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
                 disasm = f"JMP ${hex(addr).upper().replace("0X", ""):04}"
                 length = 3
+            case 0xA2:
+                # LDX imm
+                imm = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDX #${hex(imm).upper().replace("0X", ""):02}"
+                length = 2
             case _:
                 length = 3
                 disasm = "UNKNOWN OPCODE"
