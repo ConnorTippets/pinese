@@ -1,5 +1,5 @@
+from .util import sign_convert_byte, page_of
 from .memory import CPUMemory, PPUMemory
-from .util import sign_convert_byte
 
 # As much as I love my code formatter, it hates needless spaces
 # I like needless spaces. Looks neat.
@@ -96,6 +96,20 @@ class CPU:
 
                 self.memory.write_byte(addr, self.x)
                 cycles += 3
+            case 0x90:
+                # BCC rel
+                rel = sign_convert_byte(self.read_pc_byte())
+
+                cycles += 2
+
+                if not self.p & CARRY_FLAG:
+                    self.pc += rel  # + 2 was handled already
+
+                    cycles += 1
+
+                    # page boundary crossed
+                    if not page_of(self.pc - rel) == page_of(self.pc):
+                        cycles += 1
             case 0xA2:
                 # LDX imm
                 imm = self.read_pc_byte()
@@ -117,9 +131,8 @@ class CPU:
                     cycles += 1
 
                     # page boundary crossed
-                    if not ((self.pc - rel) & 0xFF) == (self.pc & 0xFF):
+                    if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
-
             case 0xEA:
                 # NOP
                 cycles += 2
