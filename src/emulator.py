@@ -55,7 +55,14 @@ class Emulator:
 
         disasm = disasm.ljust(32)
 
-        print(f"{hex(self.cpu.pc).upper().replace("0X", ""):04} {mem_bytes} {disasm}")
+        a_out = f"A:{hex(self.cpu.a).upper().replace("0X", ""):02}"
+        x_out = f"X:{hex(self.cpu.x).upper().replace("0X", ""):02}"
+        y_out = f"Y:{hex(self.cpu.y).upper().replace("0X", ""):02}"
+        p_out = f"P:{hex(self.cpu.p).upper().replace("0X", ""):02}"
+        sp_out = f"SP:{hex(self.cpu.sp).upper().replace("0X", ""):02}"
+        print(
+            f"{hex(self.cpu.pc).upper().replace("0X", ""):04} {mem_bytes} {disasm}{a_out} {x_out} {y_out} {p_out} {sp_out}"
+        )
 
     def load_game_rom(self, path: str):
         if os.path.getsize(path) < 16:
