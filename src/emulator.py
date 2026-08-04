@@ -45,6 +45,10 @@ class Emulator:
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
                 disasm = f"JMP ${hex(addr).upper().replace("0X", ""):04}"
                 length = 3
+            case 0x78:
+                # SEI
+                disasm = "SEI"
+                length = 1
             case 0x86:
                 # STX zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
@@ -58,6 +62,10 @@ class Emulator:
             case 0xEA:
                 # NOP
                 disasm = "NOP"
+                length = 1
+            case 0xF8:
+                # SED
+                disasm = "SED"
                 length = 1
             case _:
                 length = 3

@@ -61,6 +61,7 @@ class CPU:
         opcode = self.read_pc_byte()
         cycles = 0
 
+        should_disable_interrupts = False
         match opcode:
             case 0x20:
                 # JSR abs
@@ -74,6 +75,9 @@ class CPU:
                 self.set_flag(CARRY_FLAG, 1)
 
                 cycles += 2
+            case 0x78:
+                # SEI
+                should_disable_interrupts = True
             case 0x4C:
                 # JMP abs
                 location = self.read_pc_word()
@@ -98,7 +102,16 @@ class CPU:
             case 0xEA:
                 # NOP
                 cycles += 2
+            case 0xF8:
+                # SED
+                self.set_flag(DECIMAL_FLAG, 1)
+
+                cycles += 2
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
+
+        # TODO: check IRQ and handle interrupts
+        if should_disable_interrupts:
+            self.set_flag(INTERRUPT_DISABLE_FLAG, 1)
 
         return cycles
