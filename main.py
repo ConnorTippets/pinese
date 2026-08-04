@@ -5,7 +5,7 @@ from src.emulator import Emulator
 
 def main(game_rom: str):
     emu = Emulator(game_rom)
-    emu.run()
+    emu.run(log=True)
 
     return
 

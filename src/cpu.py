@@ -15,8 +15,6 @@ class CPU:
 
         self.pc += 1
 
-        print(hex(opcode))
-
         match opcode:
             case 0x4C:
                 # JMP abs

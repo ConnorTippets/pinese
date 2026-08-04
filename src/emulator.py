@@ -18,9 +18,44 @@ class Emulator:
         self.cpu.ppumemory = self.ppumemory  # change this to a better name?
         self.cpu.reset()
 
-    def run(self):
+    def run(self, log=False):
         while True:
+            if log:
+                self.print_log_line()
+
             self.cpu.step()
+
+    def print_log_line(self):
+        opcode = self.cpumemory.read_byte(self.cpu.pc)
+
+        length = 1
+        disasm = ""
+        match opcode:
+            case 0x4C:
+                # JMP abs
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"JMP ${hex(addr).upper().replace("0X", ""):04}"
+                length = 3
+            case _:
+                length = 3
+                disasm = "UNKNOWN OPCODE"
+
+        mem_bytes = " "
+        for byte in range(length):
+            mem_bytes = (
+                mem_bytes
+                + hex(self.cpumemory.read_byte(self.cpu.pc + byte))
+                .upper()
+                .replace("0X", "")
+                .zfill(2)
+                + " "
+            )
+
+        mem_bytes = mem_bytes.ljust(10)
+
+        disasm = disasm.ljust(32)
+
+        print(f"{hex(self.cpu.pc).upper().replace("0X", ""):04} {mem_bytes} {disasm}")
 
     def load_game_rom(self, path: str):
         if os.path.getsize(path) < 16:
