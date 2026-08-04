@@ -81,6 +81,12 @@ class Emulator:
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCS ${hex(addr).upper().replace("0X", ""):04}"
                 length = 2
+            case 0xD0:
+                # BNE rel
+                rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
+                addr = self.cpu.pc + 2 + rel
+                disasm = f"BNE ${hex(addr).upper().replace("0X", ""):04}"
+                length = 2
             case 0xEA:
                 # NOP
                 disasm = "NOP"

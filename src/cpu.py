@@ -142,6 +142,20 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0xD0:
+                # BNE rel
+                rel = sign_convert_byte(self.read_pc_byte())
+
+                cycles += 2
+
+                if not self.p & ZERO_FLAG:
+                    self.pc += rel  # + 2 was handled already
+
+                    cycles += 1
+
+                    # page boundary crossed
+                    if not page_of(self.pc - rel) == page_of(self.pc):
+                        cycles += 1
             case 0xEA:
                 # NOP
                 cycles += 2
