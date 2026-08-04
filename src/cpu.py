@@ -1,4 +1,5 @@
 from .memory import CPUMemory, PPUMemory
+from .util import sign_convert_byte
 
 # As much as I love my code formatter, it hates needless spaces
 # I like needless spaces. Looks neat.
@@ -99,6 +100,21 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xB0:
+                # BCS rel
+                rel = sign_convert_byte(self.read_pc_byte())
+
+                cycles += 2
+
+                if self.p & CARRY_FLAG:
+                    self.pc += rel  # + 2 was handled already
+
+                    cycles += 1
+
+                    # page boundary crossed
+                    if not ((self.pc - rel) & 0xFF) == (self.pc & 0xFF):
+                        cycles += 1
+
             case 0xEA:
                 # NOP
                 cycles += 2

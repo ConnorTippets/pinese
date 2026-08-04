@@ -2,6 +2,7 @@ import os
 
 from .cpu import CPU
 from .memory import CPUMemory, PPUMemory
+from .util import sign_convert_byte
 
 NES_MAGIC_BYTES = b"NES\x1a"
 
@@ -58,6 +59,12 @@ class Emulator:
                 # LDX imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDX #${hex(imm).upper().replace("0X", ""):02}"
+                length = 2
+            case 0xB0:
+                # BCS rel
+                rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
+                addr = self.cpu.pc + 2 + rel
+                disasm = f"BCS ${hex(addr).upper().replace("0X", ""):04}"
                 length = 2
             case 0xEA:
                 # NOP
