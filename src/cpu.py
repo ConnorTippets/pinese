@@ -49,11 +49,26 @@ class CPU:
         else:
             self.p &= ~flag
 
+    def push_byte(self, value: int):
+        self.memory.write_byte(self.sp, value)
+        self.sp -= 1
+
+    def push_word(self, value: int):
+        self.push_byte((value >> 8) & 0xFF)
+        self.push_byte(value & 0xFF)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         cycles = 0
 
         match opcode:
+            case 0x20:
+                # JSR abs
+                location = self.read_pc_word()
+                self.push_word(self.pc)
+
+                self.pc = location
+                cycles += 6
             case 0x4C:
                 # JMP abs
                 location = self.read_pc_word()
