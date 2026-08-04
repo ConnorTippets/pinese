@@ -69,6 +69,12 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0x86:
+                # STX zpg
+                addr = self.read_pc_byte()
+
+                self.memory.write_byte(addr, self.x)
+                cycles += 3
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 

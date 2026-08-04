@@ -41,6 +41,11 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDX #${hex(imm).upper().replace("0X", ""):02}"
                 length = 2
+            case 0x86:
+                # STX zpg
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"STX ${hex(addr).upper().replace("0X", ""):02} = {hex(self.cpu.x).upper().replace("0X", ""):02}"
+                length = 2
             case _:
                 length = 3
                 disasm = "UNKNOWN OPCODE"
