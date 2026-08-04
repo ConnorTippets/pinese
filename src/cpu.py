@@ -69,6 +69,11 @@ class CPU:
 
                 self.pc = location
                 cycles += 6
+            case 0x38:
+                # SEC
+                self.set_flag(CARRY_FLAG, 1)
+
+                cycles += 2
             case 0x4C:
                 # JMP abs
                 location = self.read_pc_word()
