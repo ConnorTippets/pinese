@@ -50,7 +50,7 @@ class CPU:
             self.p &= ~flag
 
     def push_byte(self, value: int):
-        self.memory.write_byte(self.sp, value)
+        self.memory.write_byte(0x100 + self.sp, value)
         self.sp -= 1
 
     def push_word(self, value: int):
