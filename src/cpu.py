@@ -64,6 +64,11 @@ class CPU:
 
         should_disable_interrupts = False
         match opcode:
+            case 0x18:
+                # CLC
+                self.set_flag(CARRY_FLAG, 0)
+
+                cycles += 2
             case 0x20:
                 # JSR abs
                 location = self.read_pc_word()

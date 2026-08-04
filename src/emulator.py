@@ -32,6 +32,10 @@ class Emulator:
         length = 1
         disasm = ""
         match opcode:
+            case 0x18:
+                # CLC
+                disasm = "CLC"
+                length = 1
             case 0x20:
                 # JSR abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
