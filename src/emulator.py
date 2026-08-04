@@ -54,6 +54,11 @@ class Emulator:
                 # SEI
                 disasm = "SEI"
                 length = 1
+            case 0x85:
+                # STA zpg
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"STA ${hex(addr).upper().replace("0X", ""):02} = {hex(self.cpu.a).upper().replace("0X", ""):02}"
+                length = 2
             case 0x86:
                 # STX zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)

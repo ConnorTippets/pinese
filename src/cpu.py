@@ -90,6 +90,12 @@ class CPU:
 
                 self.pc = location
                 cycles += 3
+            case 0x85:
+                # STA zpg
+                addr = self.read_pc_byte()
+
+                self.memory.write_byte(addr, self.a)
+                cycles += 3
             case 0x86:
                 # STX zpg
                 addr = self.read_pc_byte()
@@ -120,7 +126,7 @@ class CPU:
 
                 cycles += 2
             case 0xA9:
-                # LDX imm
+                # LDA imm
                 imm = self.read_pc_byte()
 
                 self.a = imm
