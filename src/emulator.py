@@ -144,6 +144,9 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDX #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0xA8:
+                # TAY
+                disasm = "TAY"
             case 0xA9:
                 # LDA imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)

@@ -292,6 +292,14 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xA8:
+                # TAY
+                self.y = self.a
+
+                self.set_flag(ZERO_FLAG, self.a == 0)
+                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xA9:
                 # LDA imm
                 imm = self.read_pc_byte()
