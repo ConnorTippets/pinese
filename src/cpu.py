@@ -92,6 +92,11 @@ class CPU:
             if not page_of(self.pc - rel) == page_of(self.pc):
                 self.cycles += 1
 
+    def _bit(self, val: int):
+        self.set_flag(ZERO_FLAG, (self.a & val) == 0)
+        self.set_flag(OVERFLOW_FLAG, val & OVERFLOW_FLAG)
+        self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -182,13 +187,7 @@ class CPU:
                 self.cycles += 6
             case 0x24:
                 # BIT zpg
-                addr = self.read_pc_byte()
-                val = self.memory.read_byte(addr)
-
-                self.set_flag(ZERO_FLAG, (self.a & val) == 0)
-                self.set_flag(OVERFLOW_FLAG, val & OVERFLOW_FLAG)
-                self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
-
+                self._bit(self.memory.read_byte(self.read_pc_byte()))
                 self.cycles += 3
             case 0x28:
                 # PLP
@@ -204,7 +203,6 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
                 self.cycles += 4
-
             case 0x29:
                 # AND imm
                 imm = self.read_pc_byte()
@@ -214,6 +212,10 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0x2C:
+                # BIT abs
+                self._bit(self.memory.read_byte(self.read_pc_word()))
+                self.cycles += 4
             case 0x30:
                 # BMI rel
                 self._branch(self.p & NEGATIVE_FLAG)

@@ -67,6 +67,11 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"AND #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0x2C:
+                # BIT abs
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"BIT ${hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0x30:
                 # BMI rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
@@ -203,8 +208,8 @@ class Emulator:
                 disasm = "TSX"
             case 0xBE:
                 # LDX abs,y
-                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02},Y = {hex(self.cpumemory.read_byte((addr+self.cpu.y) & 0xFF)).upper().replace("0X", ""):>02}"
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>04},Y = {hex(self.cpumemory.read_byte((addr+self.cpu.y) & 0xFF)).upper().replace("0X", ""):>02}"
                 length = 3
             case 0xC0:
                 # CPY imm
