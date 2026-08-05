@@ -252,6 +252,14 @@ class CPU:
 
                 self.memory.write_byte(addr, self.x)
                 cycles += 3
+            case 0x88:
+                # DEY
+                self.y = (self.y - 1) & 0xFF
+
+                self.set_flag(ZERO_FLAG, self.y == 0)
+                self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0x90:
                 # BCC rel
                 rel = sign_convert_byte(self.read_pc_byte())
