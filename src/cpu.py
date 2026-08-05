@@ -69,7 +69,7 @@ class CPU:
         opcode = self.read_pc_byte()
         cycles = 0
 
-        should_disable_interrupts = False
+        new_interrupts_state = ""
         match opcode:
             case 0x08:
                 # PHP
@@ -112,6 +112,21 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
                 cycles += 3
+            case 0x28:
+                # PLP
+                val = self.pop_byte()
+
+                self.set_flag(CARRY_FLAG, val & CARRY_FLAG)
+                self.set_flag(ZERO_FLAG, val & ZERO_FLAG)
+                self.new_interrupts_state = (
+                    "disabled" if val & INTERRUPT_DISABLE_FLAG else "enabled"
+                )
+                self.set_flag(DECIMAL_FLAG, val & DECIMAL_FLAG)
+                self.set_flag(OVERFLOW_FLAG, val & OVERFLOW_FLAG)
+                self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
+
+                cycles += 4
+
             case 0x29:
                 # AND imm
                 imm = self.read_pc_byte()
@@ -172,7 +187,7 @@ class CPU:
                         cycles += 1
             case 0x78:
                 # SEI
-                should_disable_interrupts = True
+                new_interrupts_state = "disabled"
             case 0x4C:
                 # JMP abs
                 location = self.read_pc_word()
@@ -291,7 +306,9 @@ class CPU:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 
         # TODO: check IRQ and handle interrupts
-        if should_disable_interrupts:
-            self.set_flag(INTERRUPT_DISABLE_FLAG, 1)
+        if new_interrupts_state:
+            self.set_flag(
+                INTERRUPT_DISABLE_FLAG, 1 if new_interrupts_state == "disabled" else 0
+            )
 
         return cycles
