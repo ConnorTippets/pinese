@@ -131,11 +131,21 @@ class Emulator:
             case 0x8A:
                 # TXA
                 disasm = "TXA"
+            case 0x8E:
+                # STX abs
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"STX ${hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 3
             case 0x90:
                 # BCS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCC ${hex(addr).upper().replace("0X", ""):>04}"
+                length = 2
+            case 0x96:
+                # STX zpg,y
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"STX ${hex(addr).upper().replace("0X", ""):>02},Y = {hex(self.cpumemory.read_byte((addr+self.cpu.y) & 0xFF)).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x98:
                 # TYA

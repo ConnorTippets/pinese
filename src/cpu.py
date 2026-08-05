@@ -327,6 +327,12 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0x8E:
+                # STX abs
+                addr = self.read_pc_word()
+
+                self.memory.write_byte(addr, self.x)
+                cycles += 4
             case 0x90:
                 # BCC rel
                 rel = sign_convert_byte(self.read_pc_byte())
@@ -341,6 +347,12 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0x96:
+                # STX zpg,y
+                addr = (self.read_pc_byte() + self.y) & 0xFF
+
+                self.memory.write_byte(addr, self.x)
+                cycles += 4
             case 0x98:
                 # TYA
                 self.a = self.y
@@ -353,8 +365,7 @@ class CPU:
                 # TXS
                 self.sp = self.x
 
-                self.set_flag(ZERO_FLAG, self.x == 0)
-                self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
+                cycles += 2
             case 0xA0:
                 # LDY imm
                 imm = self.read_pc_byte()
