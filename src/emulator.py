@@ -38,13 +38,13 @@ class Emulator:
             case 0x09:
                 # ORA
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"ORA #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"ORA #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x10:
                 # BPL rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BPL ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BPL ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0x18:
                 # CLC
@@ -52,12 +52,12 @@ class Emulator:
             case 0x20:
                 # JSR abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
-                disasm = f"JSR ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"JSR ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 3
             case 0x24:
                 # BIT zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"BIT ${hex(addr).upper().replace("0X", ""):02}"
+                disasm = f"BIT ${hex(addr).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x28:
                 # PLP
@@ -65,13 +65,13 @@ class Emulator:
             case 0x29:
                 # AND imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"AND #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"AND #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x30:
                 # BMI rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BMI ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BMI ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0x38:
                 # SEC
@@ -82,18 +82,18 @@ class Emulator:
             case 0x49:
                 # EOR
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"EOR #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"EOR #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x4C:
                 # JMP abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
-                disasm = f"JMP ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"JMP ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 3
             case 0x50:
                 # BVC rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BVC ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BVC ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0x60:
                 # RTS
@@ -104,13 +104,13 @@ class Emulator:
             case 0x69:
                 # ADC imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"ADC #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"ADC #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BVS ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BVS ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0x78:
                 # SEI
@@ -118,34 +118,34 @@ class Emulator:
             case 0x85:
                 # STA zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"STA ${hex(addr).upper().replace("0X", ""):02} = {hex(self.cpu.a).upper().replace("0X", ""):02}"
+                disasm = f"STA ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpu.a).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x86:
                 # STX zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"STX ${hex(addr).upper().replace("0X", ""):02} = {hex(self.cpu.x).upper().replace("0X", ""):02}"
+                disasm = f"STX ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpu.x).upper().replace("0X", ""):>02}"
                 length = 2
             case 0x90:
                 # BCS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BCC ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BCC ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0xA2:
                 # LDX imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"LDX #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"LDX #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0xA9:
                 # LDA imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"LDA #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"LDA #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0xB0:
                 # BCS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BCS ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BCS ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0xB8:
                 # CLV
@@ -153,13 +153,13 @@ class Emulator:
             case 0xC9:
                 # CMP imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"CMP #${hex(imm).upper().replace("0X", ""):02}"
+                disasm = f"CMP #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
             case 0xD0:
                 # BNE rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BNE ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BNE ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0xD8:
                 # CLD
@@ -171,7 +171,7 @@ class Emulator:
                 # BEQ rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
-                disasm = f"BEQ ${hex(addr).upper().replace("0X", ""):04}"
+                disasm = f"BEQ ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
             case 0xF8:
                 # SED
@@ -195,13 +195,13 @@ class Emulator:
 
         disasm = disasm.ljust(32)
 
-        a_out = f"A:{hex(self.cpu.a).upper().replace("0X", ""):02}"
-        x_out = f"X:{hex(self.cpu.x).upper().replace("0X", ""):02}"
-        y_out = f"Y:{hex(self.cpu.y).upper().replace("0X", ""):02}"
-        p_out = f"P:{hex(self.cpu.p).upper().replace("0X", ""):02}"
-        sp_out = f"SP:{hex(self.cpu.sp).upper().replace("0X", ""):02}"
+        a_out = f"A:{hex(self.cpu.a).upper().replace("0X", ""):>02}"
+        x_out = f"X:{hex(self.cpu.x).upper().replace("0X", ""):>02}"
+        y_out = f"Y:{hex(self.cpu.y).upper().replace("0X", ""):>02}"
+        p_out = f"P:{hex(self.cpu.p).upper().replace("0X", ""):>02}"
+        sp_out = f"SP:{hex(self.cpu.sp).upper().replace("0X", ""):>02}"
         print(
-            f"{hex(self.cpu.pc).upper().replace("0X", ""):04} {mem_bytes} {disasm}{a_out} {x_out} {y_out} {p_out} {sp_out}"
+            f"{hex(self.cpu.pc).upper().replace("0X", ""):>04} {mem_bytes} {disasm}{a_out} {x_out} {y_out} {p_out} {sp_out}"
         )
 
     def load_game_rom(self, path: str):
