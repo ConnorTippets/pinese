@@ -41,6 +41,11 @@ class Emulator:
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
                 disasm = f"JSR ${hex(addr).upper().replace("0X", ""):04}"
                 length = 3
+            case 0x24:
+                # BIT zpg
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"BIT ${hex(addr).upper().replace("0X", ""):02}"
+                length = 2
             case 0x38:
                 # SEC
                 disasm = "SEC"

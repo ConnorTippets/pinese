@@ -76,6 +76,16 @@ class CPU:
 
                 self.pc = location
                 cycles += 6
+            case 0x24:
+                # BIT zpg
+                addr = self.read_pc_byte()
+                val = self.memory.read_byte(addr)
+
+                self.set_flag(ZERO_FLAG, (addr & val) == 0)
+                self.set_flag(OVERFLOW_FLAG, val & 0b01000000)
+                self.set_flag(NEGATIVE_FLAG, val & 0b10000000)
+
+                cycles += 3
             case 0x38:
                 # SEC
                 self.set_flag(CARRY_FLAG, 1)
