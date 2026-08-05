@@ -319,6 +319,14 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0x8A:
+                # TXA
+                self.a = self.x
+
+                self.set_flag(ZERO_FLAG, self.x == 0)
+                self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0x90:
                 # BCC rel
                 rel = sign_convert_byte(self.read_pc_byte())
@@ -333,6 +341,20 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0x98:
+                # TYA
+                self.a = self.y
+
+                self.set_flag(ZERO_FLAG, self.y == 0)
+                self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
+
+                cycles += 2
+            case 0x9A:
+                # TXS
+                self.sp = self.x
+
+                self.set_flag(ZERO_FLAG, self.x == 0)
+                self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
             case 0xA0:
                 # LDY imm
                 imm = self.read_pc_byte()
@@ -395,6 +417,12 @@ class CPU:
                 self.set_flag(OVERFLOW_FLAG, 0)
 
                 cycles += 2
+            case 0xBA:
+                # TSX
+                self.x = self.sp
+
+                self.set_flag(ZERO_FLAG, self.sp == 0)
+                self.set_flag(NEGATIVE_FLAG, self.sp & NEGATIVE_FLAG)
             case 0xC0:
                 # CPY imm
                 imm = self.read_pc_byte()

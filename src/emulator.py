@@ -128,12 +128,21 @@ class Emulator:
             case 0x88:
                 # DEY
                 disasm = "DEY"
+            case 0x8A:
+                # TXA
+                disasm = "TXA"
             case 0x90:
                 # BCS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCC ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
+            case 0x98:
+                # TYA
+                disasm = "TYA"
+            case 0x9A:
+                # TXS
+                disasm = "TXS"
             case 0xA0:
                 # LDY imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
@@ -164,6 +173,9 @@ class Emulator:
             case 0xB8:
                 # CLV
                 disasm = "CLV"
+            case 0xBA:
+                # TSX
+                disasm = "TSX"
             case 0xC0:
                 # CPY imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
