@@ -79,6 +79,11 @@ class Emulator:
             case 0x48:
                 # PHA
                 disasm = "PHA"
+            case 0x49:
+                # EOR
+                imm = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"EOR #${hex(imm).upper().replace("0X", ""):02}"
+                length = 2
             case 0x4C:
                 # JMP abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
