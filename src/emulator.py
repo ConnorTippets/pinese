@@ -71,6 +71,9 @@ class Emulator:
             case 0x60:
                 # RTS
                 disasm = "RTS"
+            case 0x68:
+                # PLA
+                disasm = "PLA"
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))

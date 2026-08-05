@@ -109,7 +109,7 @@ class CPU:
 
                 self.set_flag(ZERO_FLAG, (addr & val) == 0)
                 self.set_flag(OVERFLOW_FLAG, val & 0b01000000)
-                self.set_flag(NEGATIVE_FLAG, val & 0b10000000)
+                self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
                 cycles += 3
             case 0x38:
@@ -134,6 +134,14 @@ class CPU:
             case 0x60:
                 # RTS
                 self.pc = self.pop_word()
+            case 0x68:
+                # PLA
+                self.a = self.pop_byte()
+
+                self.set_flag(ZERO_FLAG, self.a == 0)
+                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
+                cycles += 4
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.read_pc_byte())
