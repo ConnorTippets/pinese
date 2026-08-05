@@ -116,8 +116,8 @@ class CPU:
                 addr = self.read_pc_byte()
                 val = self.memory.read_byte(addr)
 
-                self.set_flag(ZERO_FLAG, (addr & val) == 0)
-                self.set_flag(OVERFLOW_FLAG, val & 0b01000000)
+                self.set_flag(ZERO_FLAG, (self.a & val) == 0)
+                self.set_flag(OVERFLOW_FLAG, val & OVERFLOW_FLAG)
                 self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
                 cycles += 3
@@ -208,9 +208,10 @@ class CPU:
                 imm = self.read_pc_byte()
 
                 prev_a = self.a
-                self.a += imm + (1 if self.p & CARRY_FLAG else 0)
+                new_a = self.a + imm + (1 if self.p & CARRY_FLAG else 0)
+                self.a = new_a & 0xFF
 
-                self.set_flag(CARRY_FLAG, self.a > 0xFF)
+                self.set_flag(CARRY_FLAG, new_a > 0xFF)
                 self.set_flag(ZERO_FLAG, self.a == 0)
                 self.set_flag(OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ imm) & 0x80)
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
