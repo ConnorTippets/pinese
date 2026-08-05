@@ -58,6 +58,13 @@ class CPU:
         self.push_byte((value >> 8) & 0xFF)
         self.push_byte(value & 0xFF)
 
+    def pop_byte(self) -> int:
+        self.sp += 1
+        return self.memory.read_byte(0x100 + self.sp)
+
+    def pop_word(self) -> int:
+        return self.pop_byte() | (self.pop_byte() << 8)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         cycles = 0
@@ -119,6 +126,9 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0x60:
+                # RTS
+                self.pc = self.pop_word()
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.read_pc_byte())

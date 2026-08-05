@@ -67,6 +67,10 @@ class Emulator:
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BVC ${hex(addr).upper().replace("0X", ""):04}"
                 length = 2
+            case 0x60:
+                # RTS
+                disasm = "RTS"
+                length = 1
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
