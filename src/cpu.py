@@ -73,6 +73,12 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.a == 0)
         self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+    def _and(self, val: int):
+        self.a &= val
+
+        self.set_flag(ZERO_FLAG, self.a == 0)
+        self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
     def _ldx(self, val: int):
         self.x = val
 
@@ -185,9 +191,24 @@ class CPU:
 
                 self.pc = location
                 self.cycles += 6
+            case 0x21:
+                # AND (indirect,x)
+                addr = self.read_pc_byte()
+                self._and(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+
+                self.cycles += 6
             case 0x24:
                 # BIT zpg
                 self._bit(self.memory.read_byte(self.read_pc_byte()))
+                self.cycles += 3
+            case 0x25:
+                # AND zpg
+                self._and(self.memory.read_byte(self.read_pc_byte()))
                 self.cycles += 3
             case 0x28:
                 # PLP
@@ -205,25 +226,57 @@ class CPU:
                 self.cycles += 4
             case 0x29:
                 # AND imm
-                imm = self.read_pc_byte()
-                self.a &= imm
-
-                self.set_flag(ZERO_FLAG, self.a == 0)
-                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
-
+                self._and(self.read_pc_byte())
                 self.cycles += 2
             case 0x2C:
                 # BIT abs
                 self._bit(self.memory.read_byte(self.read_pc_word()))
                 self.cycles += 4
+            case 0x2D:
+                # AND abs
+                self._and(self.memory.read_byte(self.read_pc_word()))
+                self.cycles += 4
             case 0x30:
                 # BMI rel
                 self._branch(self.p & NEGATIVE_FLAG)
+            case 0x25:
+                # AND zpg,x
+                self._and(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+                self.cycles += 4
+            case 0x31:
+                # AND (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._and(self.memory.read_byte(base + self.y))
+
+                self.cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    self.cycles += 1
             case 0x38:
                 # SEC
                 self.set_flag(CARRY_FLAG, 1)
 
                 self.cycles += 2
+            case 0x3D:
+                # AND abs,y
+                addr = self.read_pc_word()
+                self._and(self.memory.read_byte(addr + self.y))
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(addr + self.y):
+                    self.cycles += 1
+            case 0x3D:
+                # AND abs,x
+                addr = self.read_pc_word()
+                self._and(self.memory.read_byte(addr + self.x))
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(addr + self.x):
+                    self.cycles += 1
             case 0x48:
                 # PHA
                 self.push_byte(self.a)
