@@ -348,6 +348,15 @@ class CPU:
                 self.set_flag(DECIMAL_FLAG, 0)
 
                 cycles += 2
+            case 0xE0:
+                # CPX imm
+                imm = self.read_pc_byte()
+
+                self.set_flag(CARRY_FLAG, self.x >= imm)
+                self.set_flag(ZERO_FLAG, self.x == imm)
+                self.set_flag(NEGATIVE_FLAG, (self.x - imm) & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xEA:
                 # NOP
                 cycles += 2

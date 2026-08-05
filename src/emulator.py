@@ -174,6 +174,11 @@ class Emulator:
             case 0xD8:
                 # CLD
                 disasm = "CLD"
+            case 0xE0:
+                # CPX
+                imm = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"CPX #${hex(imm).upper().replace("0X", ""):>02}"
+                length = 2
             case 0xEA:
                 # NOP
                 disasm = "NOP"
