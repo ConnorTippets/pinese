@@ -71,6 +71,12 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.a == 0)
         self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+    def _ldx(self, val: int):
+        self.x = val
+
+        self.set_flag(ZERO_FLAG, self.x == 0)
+        self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         cycles = 0
@@ -378,12 +384,13 @@ class CPU:
             case 0xA2:
                 # LDX imm
                 imm = self.read_pc_byte()
-
-                self.x = imm
-                self.set_flag(ZERO_FLAG, self.x == 0)
-                self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
-
+                self._ldx(imm)
                 cycles += 2
+            case 0xA6:
+                # LDX zpg
+                addr = self.read_pc_byte()
+                self._ldx(self.memory.read_byte(addr))
+                cycles += 3
             case 0xA8:
                 # TAY
                 self.y = self.a
@@ -409,6 +416,11 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xAE:
+                # LDX abs
+                addr = self.read_pc_word()
+                self._ldx(self.memory.read_byte(addr))
+                cycles += 4
             case 0xB0:
                 # BCS rel
                 rel = sign_convert_byte(self.read_pc_byte())
@@ -423,6 +435,11 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0xB6:
+                # LDX zpg,y
+                addr = self.read_pc_byte()
+                self._ldx(self.memory.read_byte((addr + self.y) & 0xFF))
+                cycles += 4
             case 0xB8:
                 # CLV
                 self.set_flag(OVERFLOW_FLAG, 0)
@@ -434,6 +451,14 @@ class CPU:
 
                 self.set_flag(ZERO_FLAG, self.sp == 0)
                 self.set_flag(NEGATIVE_FLAG, self.sp & NEGATIVE_FLAG)
+            case 0xBE:
+                # LDX abs,y
+                addr = self.read_pc_word()
+                self._ldx(self.memory.read_byte(addr + self.y))
+                cycles += 4
+
+                if not page_of(addr) == page_of(addr + self.y):
+                    cycles += 1
             case 0xC0:
                 # CPY imm
                 imm = self.read_pc_byte()

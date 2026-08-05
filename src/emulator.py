@@ -163,6 +163,11 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDX #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0xA2:
+                # LDX zpg
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0xA8:
                 # TAY
                 disasm = "TAY"
@@ -174,11 +179,21 @@ class Emulator:
             case 0xAA:
                 # TAX
                 disasm = "TAX"
+            case 0xAE:
+                # LDX abs
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 3
             case 0xB0:
                 # BCS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCS ${hex(addr).upper().replace("0X", ""):>04}"
+                length = 2
+            case 0xB6:
+                # LDX zpg,y
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02},Y = {hex(self.cpumemory.read_byte((addr+self.cpu.y) & 0xFF)).upper().replace("0X", ""):>02}"
                 length = 2
             case 0xB8:
                 # CLV
@@ -186,6 +201,11 @@ class Emulator:
             case 0xBA:
                 # TSX
                 disasm = "TSX"
+            case 0xBE:
+                # LDX abs,y
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02},Y = {hex(self.cpumemory.read_byte((addr+self.cpu.y) & 0xFF)).upper().replace("0X", ""):>02}"
+                length = 3
             case 0xC0:
                 # CPY imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
