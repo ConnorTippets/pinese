@@ -91,6 +91,20 @@ class CPU:
                 self.set_flag(CARRY_FLAG, 1)
 
                 cycles += 2
+            case 0x50:
+                # BVC rel
+                rel = sign_convert_byte(self.read_pc_byte())
+
+                cycles += 2
+
+                if not self.p & OVERFLOW_FLAG:
+                    self.pc += rel  # + 2 was handled already
+
+                    cycles += 1
+
+                    # page boundary crossed
+                    if not page_of(self.pc - rel) == page_of(self.pc):
+                        cycles += 1
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.read_pc_byte())
