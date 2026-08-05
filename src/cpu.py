@@ -311,6 +311,15 @@ class CPU:
                 self.set_flag(OVERFLOW_FLAG, 0)
 
                 cycles += 2
+            case 0xC0:
+                # CPY imm
+                imm = self.read_pc_byte()
+
+                self.set_flag(CARRY_FLAG, self.y >= imm)
+                self.set_flag(ZERO_FLAG, self.y == imm)
+                self.set_flag(NEGATIVE_FLAG, (self.y - imm) & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xC9:
                 # CMP imm
                 imm = self.read_pc_byte()
