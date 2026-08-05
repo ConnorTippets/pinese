@@ -182,6 +182,11 @@ class Emulator:
             case 0xEA:
                 # NOP
                 disasm = "NOP"
+            case 0xE9:
+                # SBC imm
+                imm = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"SBC #${hex(imm).upper().replace("0X", ""):>02}"
+                length = 2
             case 0xF0:
                 # BEQ rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))

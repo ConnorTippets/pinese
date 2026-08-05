@@ -208,7 +208,7 @@ class CPU:
                 imm = self.read_pc_byte()
 
                 prev_a = self.a
-                new_a = self.a + imm + (1 if self.p & CARRY_FLAG else 0)
+                new_a = self.a + imm + (self.p & CARRY_FLAG)
                 self.a = new_a & 0xFF
 
                 self.set_flag(CARRY_FLAG, new_a > 0xFF)
@@ -360,6 +360,22 @@ class CPU:
                 cycles += 2
             case 0xEA:
                 # NOP
+                cycles += 2
+            case 0xE9:
+                # SBC imm
+                imm = self.read_pc_byte()
+
+                prev_a = self.a
+                new_a = self.a + (~imm) + (self.p & CARRY_FLAG)
+                self.a = new_a & 0xFF
+
+                self.set_flag(CARRY_FLAG, not new_a < 0x00)
+                self.set_flag(ZERO_FLAG, self.a == 0)
+                self.set_flag(
+                    OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ (~imm)) & 0x80
+                )
+                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
                 cycles += 2
             case 0xF0:
                 # BEQ rel
