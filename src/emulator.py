@@ -32,6 +32,12 @@ class Emulator:
         length = 1
         disasm = ""
         match opcode:
+            case 0x10:
+                # BPL rel
+                rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
+                addr = self.cpu.pc + 2 + rel
+                disasm = f"BPL ${hex(addr).upper().replace("0X", ""):04}"
+                length = 2
             case 0x18:
                 # CLC
                 disasm = "CLC"
