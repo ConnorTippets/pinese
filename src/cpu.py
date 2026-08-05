@@ -346,6 +346,14 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, (self.a - imm) & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xCA:
+                # DEX
+                self.x = (self.x - 1) & 0xFF
+
+                self.set_flag(ZERO_FLAG, self.x == 0)
+                self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xD0:
                 # BNE rel
                 rel = sign_convert_byte(self.read_pc_byte())
