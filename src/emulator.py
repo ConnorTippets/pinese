@@ -32,6 +32,9 @@ class Emulator:
         length = 1
         disasm = ""
         match opcode:
+            case 0x08:
+                # PHP
+                disasm = "PHP"
             case 0x10:
                 # BPL rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
@@ -41,7 +44,6 @@ class Emulator:
             case 0x18:
                 # CLC
                 disasm = "CLC"
-                length = 1
             case 0x20:
                 # JSR abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
@@ -55,7 +57,6 @@ class Emulator:
             case 0x38:
                 # SEC
                 disasm = "SEC"
-                length = 1
             case 0x4C:
                 # JMP abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
@@ -70,7 +71,6 @@ class Emulator:
             case 0x60:
                 # RTS
                 disasm = "RTS"
-                length = 1
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
@@ -80,7 +80,6 @@ class Emulator:
             case 0x78:
                 # SEI
                 disasm = "SEI"
-                length = 1
             case 0x85:
                 # STA zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
@@ -122,7 +121,6 @@ class Emulator:
             case 0xEA:
                 # NOP
                 disasm = "NOP"
-                length = 1
             case 0xF0:
                 # BEQ rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
@@ -132,7 +130,6 @@ class Emulator:
             case 0xF8:
                 # SED
                 disasm = "SED"
-                length = 1
             case _:
                 length = 3
                 disasm = "UNKNOWN OPCODE"

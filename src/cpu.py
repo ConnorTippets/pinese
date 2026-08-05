@@ -71,6 +71,11 @@ class CPU:
 
         should_disable_interrupts = False
         match opcode:
+            case 0x08:
+                # PHP
+                self.push_byte(self.p | B_FLAG)
+
+                cycles += 3
             case 0x10:
                 # BPL rel
                 rel = sign_convert_byte(self.read_pc_byte())
