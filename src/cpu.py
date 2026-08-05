@@ -368,6 +368,14 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xAA:
+                # TAX
+                self.x = self.a
+
+                self.set_flag(ZERO_FLAG, self.a == 0)
+                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xB0:
                 # BCS rel
                 rel = sign_convert_byte(self.read_pc_byte())
