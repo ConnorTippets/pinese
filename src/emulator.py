@@ -160,6 +160,9 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"CPY #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0xC8:
+                # INY
+                disasm = "INY"
             case 0xC9:
                 # CMP imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)

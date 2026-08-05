@@ -321,6 +321,14 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, (self.y - imm) & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0xC8:
+                # INY
+                self.y = (self.y + 1) & 0xFF
+
+                self.set_flag(ZERO_FLAG, self.y == 0)
+                self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xC9:
                 # CMP imm
                 imm = self.read_pc_byte()
