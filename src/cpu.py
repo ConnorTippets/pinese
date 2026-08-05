@@ -126,6 +126,11 @@ class CPU:
                 self.set_flag(CARRY_FLAG, 1)
 
                 cycles += 2
+            case 0x48:
+                # PHA
+                self.push_byte(self.a)
+
+                cycles += 3
             case 0x50:
                 # BVC rel
                 rel = sign_convert_byte(self.read_pc_byte())

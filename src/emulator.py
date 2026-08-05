@@ -62,6 +62,9 @@ class Emulator:
             case 0x38:
                 # SEC
                 disasm = "SEC"
+            case 0x48:
+                # PHA
+                disasm = "PHA"
             case 0x4C:
                 # JMP abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
