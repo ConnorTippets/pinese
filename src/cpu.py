@@ -65,26 +65,49 @@ class CPU:
     def pop_word(self) -> int:
         return self.pop_byte() | (self.pop_byte() << 8)
 
+    def _ora(self, val: int):
+        self.a |= val
+
+        self.set_flag(ZERO_FLAG, self.a == 0)
+        self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         cycles = 0
 
         new_interrupts_state = ""
         match opcode:
+            case 0x01:
+                # ORA (indirect,x)
+                addr = self.read_pc_byte()
+                self._ora(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+
+                cycles += 6
+            case 0x05:
+                # ORA zpg
+                self._ora(self.memory.read_byte(self.read_pc_byte()))
+
+                cycles += 3
             case 0x08:
                 # PHP
                 self.push_byte(self.p | B_FLAG)
 
                 cycles += 3
             case 0x09:
-                # ORA
-                imm = self.read_pc_byte()
-                self.a |= imm
-
-                self.set_flag(ZERO_FLAG, self.a == 0)
-                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+                # ORA imm
+                self._ora(self.read_pc_byte())
 
                 cycles += 2
+            case 0x0D:
+                # ORA abs
+                self._ora(self.memory.read_byte(self.read_pc_word()))
+
+                cycles += 4
             case 0x10:
                 # BPL rel
                 rel = sign_convert_byte(self.read_pc_byte())
@@ -99,11 +122,47 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0x11:
+                # ORA (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._ora(self.memory.read_byte(base + self.y))
+
+                cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    cycles += 1
+            case 0x15:
+                # ORA zpg,x
+                self._ora(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+
+                cycles += 4
             case 0x18:
                 # CLC
                 self.set_flag(CARRY_FLAG, 0)
 
                 cycles += 2
+            case 0x19:
+                # ORA abs,y
+                addr = self.read_pc_word()
+                self._ora(self.memory.read_byte(addr + self.y))
+
+                cycles += 4
+
+                if not page_of(addr) == page_of(self.y):
+                    cycles += 1
+            case 0x1D:
+                # ORA abs,x
+                addr = self.read_pc_word()
+                self._ora(self.memory.read_byte(addr + self.x))
+
+                cycles += 4
+
+                if not page_of(addr) == page_of(self.x):
+                    cycles += 1
             case 0x20:
                 # JSR abs
                 location = self.read_pc_word()
