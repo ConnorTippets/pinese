@@ -112,6 +112,15 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
                 cycles += 3
+            case 0x29:
+                # AND imm
+                imm = self.read_pc_byte()
+                self.a &= imm
+
+                self.set_flag(ZERO_FLAG, self.a == 0)
+                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0x38:
                 # SEC
                 self.set_flag(CARRY_FLAG, 1)
