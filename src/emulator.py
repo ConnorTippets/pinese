@@ -131,6 +131,11 @@ class Emulator:
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCC ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 2
+            case 0xA0:
+                # LDY imm
+                imm = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDY #${hex(imm).upper().replace("0X", ""):>02}"
+                length = 2
             case 0xA2:
                 # LDX imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)

@@ -265,6 +265,15 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0xA0:
+                # LDY imm
+                imm = self.read_pc_byte()
+
+                self.y = imm
+                self.set_flag(ZERO_FLAG, self.y == 0)
+                self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xA2:
                 # LDX imm
                 imm = self.read_pc_byte()
