@@ -185,6 +185,9 @@ class Emulator:
             case 0xEA:
                 # NOP
                 disasm = "NOP"
+            case 0xE8:
+                # INX
+                disasm = "INX"
             case 0xE9:
                 # SBC imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)

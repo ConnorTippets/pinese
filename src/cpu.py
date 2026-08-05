@@ -369,6 +369,14 @@ class CPU:
             case 0xEA:
                 # NOP
                 cycles += 2
+            case 0xE8:
+                # INX
+                self.x = (self.x + 1) & 0xFF
+
+                self.set_flag(ZERO_FLAG, self.x == 0)
+                self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xE9:
                 # SBC imm
                 imm = self.read_pc_byte()
