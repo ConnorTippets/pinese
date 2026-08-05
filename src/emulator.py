@@ -120,6 +120,11 @@ class Emulator:
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCS ${hex(addr).upper().replace("0X", ""):04}"
                 length = 2
+            case 0xC9:
+                # CMP imm
+                imm = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"CMP #${hex(imm).upper().replace("0X", ""):02}"
+                length = 2
             case 0xD0:
                 # BNE rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))

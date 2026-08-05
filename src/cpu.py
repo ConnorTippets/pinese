@@ -232,6 +232,15 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0xC9:
+                # CMP imm
+                imm = self.read_pc_byte()
+
+                self.set_flag(CARRY_FLAG, self.a >= imm)
+                self.set_flag(ZERO_FLAG, self.a == imm)
+                self.set_flag(NEGATIVE_FLAG, (self.a - imm) & NEGATIVE_FLAG)
+
+                cycles += 2
             case 0xD0:
                 # BNE rel
                 rel = sign_convert_byte(self.read_pc_byte())
