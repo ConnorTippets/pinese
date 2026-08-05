@@ -131,6 +131,9 @@ class Emulator:
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BNE ${hex(addr).upper().replace("0X", ""):04}"
                 length = 2
+            case 0xD8:
+                # CLD
+                disasm = "CLD"
             case 0xEA:
                 # NOP
                 disasm = "NOP"

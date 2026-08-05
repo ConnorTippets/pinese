@@ -255,6 +255,11 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0xD8:
+                # CLD
+                self.set_flag(DECIMAL_FLAG, 0)
+
+                cycles += 2
             case 0xEA:
                 # NOP
                 cycles += 2
