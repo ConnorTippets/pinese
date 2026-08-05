@@ -275,6 +275,11 @@ class CPU:
                     # page boundary crossed
                     if not page_of(self.pc - rel) == page_of(self.pc):
                         cycles += 1
+            case 0xB8:
+                # CLV
+                self.set_flag(OVERFLOW_FLAG, 0)
+
+                cycles += 2
             case 0xC9:
                 # CMP imm
                 imm = self.read_pc_byte()

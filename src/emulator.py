@@ -137,6 +137,9 @@ class Emulator:
                 addr = self.cpu.pc + 2 + rel
                 disasm = f"BCS ${hex(addr).upper().replace("0X", ""):04}"
                 length = 2
+            case 0xB8:
+                # CLV
+                disasm = "CLV"
             case 0xC9:
                 # CMP imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
