@@ -62,6 +62,12 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"AND #${hex(imm).upper().replace("0X", ""):02}"
                 length = 2
+            case 0x30:
+                # BMI rel
+                rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))
+                addr = self.cpu.pc + 2 + rel
+                disasm = f"BMI ${hex(addr).upper().replace("0X", ""):04}"
+                length = 2
             case 0x38:
                 # SEC
                 disasm = "SEC"

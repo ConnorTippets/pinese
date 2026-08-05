@@ -136,6 +136,20 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 cycles += 2
+            case 0x30:
+                # BMI rel
+                rel = sign_convert_byte(self.read_pc_byte())
+
+                cycles += 2
+
+                if self.p & NEGATIVE_FLAG:
+                    self.pc += rel  # + 2 was handled already
+
+                    cycles += 1
+
+                    # page boundary crossed
+                    if not page_of(self.pc - rel) == page_of(self.pc):
+                        cycles += 1
             case 0x38:
                 # SEC
                 self.set_flag(CARRY_FLAG, 1)
