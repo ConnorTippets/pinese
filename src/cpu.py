@@ -285,6 +285,20 @@ class CPU:
 
                 if not page_of(addr) == page_of(addr + self.x):
                     self.cycles += 1
+            case 0x40:
+                # RTI
+                p = self.pop_byte()
+
+                self.set_flag(CARRY_FLAG, p & CARRY_FLAG)
+                self.set_flag(ZERO_FLAG, p & ZERO_FLAG)
+                self.set_flag(INTERRUPT_DISABLE_FLAG, p & INTERRUPT_DISABLE_FLAG)
+                self.set_flag(DECIMAL_FLAG, p & DECIMAL_FLAG)
+                self.set_flag(OVERFLOW_FLAG, p & OVERFLOW_FLAG)
+                self.set_flag(NEGATIVE_FLAG, p & NEGATIVE_FLAG)
+
+                self.pc = self.pop_word()
+
+                self.cycles += 6
             case 0x48:
                 # PHA
                 self.push_byte(self.a)

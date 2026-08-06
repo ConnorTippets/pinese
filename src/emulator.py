@@ -81,6 +81,9 @@ class Emulator:
             case 0x38:
                 # SEC
                 disasm = "SEC"
+            case 0x40:
+                # RTI
+                disasm = "RTI"
             case 0x48:
                 # PHA
                 disasm = "PHA"
