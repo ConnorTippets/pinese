@@ -135,6 +135,15 @@ class Emulator:
             case 0x78:
                 # SEI
                 disasm = "SEI"
+            case 0x81:
+                # STA (indirect,x)
+                base = self.cpumemory.read_byte(self.cpu.pc + 1)
+                addr = (
+                    self.cpumemory.read_byte((base + self.cpu.x) & 0xFF)
+                    + self.cpumemory.read_byte((base + self.cpu.x + 1) & 0xFF) * 256
+                )
+                disasm = f"STA (${hex(base).upper().replace("0X", ""):>02},X) @ {hex((base + self.cpu.x) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0x85:
                 # STA zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
