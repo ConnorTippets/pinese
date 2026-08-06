@@ -195,7 +195,7 @@ class CPU:
             case 0x20:
                 # JSR abs
                 location = self.read_pc_word()
-                self.push_word(self.pc)
+                self.push_word(self.pc - 1)
 
                 self.pc = location
                 self.cycles += 6
@@ -304,7 +304,7 @@ class CPU:
                 self._branch(not self.p & OVERFLOW_FLAG)
             case 0x60:
                 # RTS
-                self.pc = self.pop_word()
+                self.pc = self.pop_word() + 1
             case 0x68:
                 # PLA
                 self.a = self.pop_byte()
