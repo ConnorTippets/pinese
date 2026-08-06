@@ -25,6 +25,8 @@ class CPU:
         self.p = 0x24
         self.sp = 0x100  # SP is set in reset
 
+        self.stacknum = 0
+
         self.cycles = 0
 
     def reset(self):
@@ -84,6 +86,12 @@ class CPU:
 
         self.set_flag(ZERO_FLAG, self.x == 0)
         self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
+
+    def _lda(self, val: int):
+        self.a = val
+
+        self.set_flag(ZERO_FLAG, self.a == 0)
+        self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
     def _branch(self, condition):
         rel = sign_convert_byte(self.read_pc_byte())
@@ -406,6 +414,11 @@ class CPU:
                 addr = self.read_pc_byte()
                 self._ldx(self.memory.read_byte(addr))
                 self.cycles += 3
+            case 0xA5:
+                # LDA zpg
+                addr = self.read_pc_byte()
+                self._lda(self.memory.read_byte(addr))
+                self.cycles += 3
             case 0xA8:
                 # TAY
                 self.y = self.a
@@ -413,6 +426,11 @@ class CPU:
                 self.set_flag(ZERO_FLAG, self.a == 0)
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+                self.cycles += 2
+            case 0xA9:
+                # LDA imm
+                imm = self.read_pc_byte()
+                self._lda(imm)
                 self.cycles += 2
             case 0xA9:
                 # LDA imm
@@ -431,6 +449,11 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0xAD:
+                # LDA abs
+                addr = self.read_pc_word()
+                self._lda(self.memory.read_byte(addr))
+                self.cycles += 4
             case 0xAE:
                 # LDX abs
                 addr = self.read_pc_word()

@@ -184,6 +184,11 @@ class Emulator:
             case 0xAA:
                 # TAX
                 disasm = "TAX"
+            case 0xAD:
+                # LDA abs
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"LDA ${hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 3
             case 0xAE:
                 # LDX abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
