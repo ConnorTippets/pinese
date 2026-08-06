@@ -120,6 +120,9 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"ADC #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0x6A:
+                # ROR a
+                disasm = "ROR A"
             case 0x70:
                 # BVS rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))

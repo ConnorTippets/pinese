@@ -129,6 +129,15 @@ class CPU:
 
         return result
 
+    def _ror(self, val: int) -> int:
+        result = val >> 1 | ((self.p & CARRY_FLAG) << 7)
+
+        self.set_flag(CARRY_FLAG, val & CARRY_FLAG)
+        self.set_flag(ZERO_FLAG, result == 0)
+        self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+        return result
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -386,6 +395,12 @@ class CPU:
                 self.a = self._lsr(self.a)
 
                 self.cycles += 2
+            case 0x4C:
+                # JMP abs
+                location = self.read_pc_word()
+
+                self.pc = location
+                self.cycles += 3
             case 0x4E:
                 # LSR abs
                 addr = self.read_pc_word()
@@ -441,18 +456,53 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0x6A:
+                # ROR a
+                self.a = self._ror(self.a)
+
+                self.cycles += 2
+            case 0x66:
+                # ROR zpg
+                addr = self.read_pc_byte()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._ror(val))
+
+                self.cycles += 5
+            case 0x6E:
+                # ROR abs
+                addr = self.read_pc_word()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._ror(val))
+
+                self.cycles += 6
             case 0x70:
                 # BVS rel
                 self._branch(self.p & OVERFLOW_FLAG)
+            case 0x76:
+                # ROR zpg,x
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._ror(val))
+
+                self.cycles += 6
             case 0x78:
                 # SEI
                 new_interrupts_state = "disabled"
-            case 0x4C:
-                # JMP abs
-                location = self.read_pc_word()
+            case 0x7E:
+                # ROR abs,x
+                addr = self.read_pc_word() + self.x
+                val = self.memory.read_byte(addr)
 
-                self.pc = location
-                self.cycles += 3
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._ror(val))
+
+                self.cycles += 7
             case 0x85:
                 # STA zpg
                 addr = self.read_pc_byte()
