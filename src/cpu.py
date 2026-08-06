@@ -663,6 +663,17 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0xA1:
+                # LDA (indirect,x)
+                base = self.read_pc_byte()
+                value = self.memory.read_byte(
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+
+                self._lda(value)
+
+                self.cycles += 6
             case 0xA2:
                 # LDX imm
                 imm = self.read_pc_byte()

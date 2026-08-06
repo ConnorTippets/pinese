@@ -183,20 +183,29 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDY #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0xA1:
+                # LDA (indirect,x)
+                base = self.cpumemory.read_byte(self.cpu.pc + 1)
+                addr = (
+                    self.cpumemory.read_byte((base + self.cpu.x) & 0xFF)
+                    + self.cpumemory.read_byte((base + self.cpu.x + 1) & 0xFF) * 256
+                )
+                disasm = f"LDA (${hex(base).upper().replace("0X", ""):>02},X) @ {hex((base + self.cpu.x) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0xA2:
                 # LDX imm
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDX #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
-            case 0xA2:
-                # LDX zpg
-                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
-                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
-                length = 2
             case 0xA5:
                 # LDA zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDA ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
+            case 0xA6:
+                # LDX zpg
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
                 length = 2
             case 0xA8:
                 # TAY
