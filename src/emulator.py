@@ -70,6 +70,9 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"AND #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0x2A:
+                # ROL a
+                disasm = "ROL A"
             case 0x2C:
                 # BIT abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)

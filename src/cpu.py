@@ -138,6 +138,15 @@ class CPU:
 
         return result
 
+    def _rol(self, val: int) -> int:
+        result = (val << 1 | (self.p & CARRY_FLAG)) & 0xFF
+
+        self.set_flag(CARRY_FLAG, val & NEGATIVE_FLAG)
+        self.set_flag(ZERO_FLAG, result == 0)
+        self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+        return result
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -286,6 +295,15 @@ class CPU:
                 # AND zpg
                 self._and(self.memory.read_byte(self.read_pc_byte()))
                 self.cycles += 3
+            case 0x26:
+                # ROL zpg
+                addr = self.read_pc_byte()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._rol(val))
+
+                self.cycles += 5
             case 0x28:
                 # PLP
                 val = self.pop_byte()
@@ -304,6 +322,11 @@ class CPU:
                 # AND imm
                 self._and(self.read_pc_byte())
                 self.cycles += 2
+            case 0x2A:
+                # ROL a
+                self.a = self._rol(self.a)
+
+                self.cycles += 2
             case 0x2C:
                 # BIT abs
                 self._bit(self.memory.read_byte(self.read_pc_word()))
@@ -312,6 +335,15 @@ class CPU:
                 # AND abs
                 self._and(self.memory.read_byte(self.read_pc_word()))
                 self.cycles += 4
+            case 0x2E:
+                # ROL abs
+                addr = self.read_pc_word()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._rol(val))
+
+                self.cycles += 6
             case 0x30:
                 # BMI rel
                 self._branch(self.p & NEGATIVE_FLAG)
@@ -332,6 +364,15 @@ class CPU:
 
                 if not page_of(base) == page_of(base + self.y):
                     self.cycles += 1
+            case 0x36:
+                # ROL zpg,x
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._rol(val))
+
+                self.cycles += 6
             case 0x38:
                 # SEC
                 self.set_flag(CARRY_FLAG, 1)
@@ -353,6 +394,15 @@ class CPU:
 
                 if not page_of(addr) == page_of(addr + self.x):
                     self.cycles += 1
+            case 0x3E:
+                # ROL abs,x
+                addr = self.read_pc_word() + self.x
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._rol(val))
+
+                self.cycles += 7
             case 0x40:
                 # RTI
                 p = self.pop_byte()
