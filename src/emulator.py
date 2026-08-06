@@ -188,6 +188,11 @@ class Emulator:
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"LDX ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0xA5:
+                # LDA zpg
+                addr = self.cpumemory.read_byte(self.cpu.pc + 1)
+                disasm = f"LDA ${hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0xA8:
                 # TAY
                 disasm = "TAY"
