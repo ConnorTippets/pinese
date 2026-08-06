@@ -111,6 +111,15 @@ class CPU:
         self.set_flag(OVERFLOW_FLAG, val & OVERFLOW_FLAG)
         self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
+    def _lsr(self, val: int) -> int:
+        result = val >> 1
+
+        self.set_flag(CARRY_FLAG, val & CARRY_FLAG)
+        self.set_flag(ZERO_FLAG, result == 0)
+        self.set_flag(NEGATIVE_FLAG, 0)
+
+        return result
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -299,6 +308,15 @@ class CPU:
                 self.pc = self.pop_word()
 
                 self.cycles += 6
+            case 0x46:
+                # LSR zpg
+                addr = self.read_pc_byte()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._lsr(val))
+
+                self.cycles += 5
             case 0x48:
                 # PHA
                 self.push_byte(self.a)
@@ -313,9 +331,41 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0x4A:
+                # LSR a
+                self.a = self._lsr(self.a)
+
+                self.cycles += 2
+            case 0x4E:
+                # LSR abs
+                addr = self.read_pc_word()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._lsr(val))
+
+                self.cycles += 6
             case 0x50:
                 # BVC rel
                 self._branch(not self.p & OVERFLOW_FLAG)
+            case 0x56:
+                # LSR zpg,x
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._lsr(val))
+
+                self.cycles += 6
+            case 0x5E:
+                # LSR abs,x
+                addr = self.read_pc_word() + self.x
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._lsr(val))
+
+                self.cycles += 7
             case 0x60:
                 # RTS
                 self.pc = self.pop_word() + 1
