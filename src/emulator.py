@@ -151,6 +151,11 @@ class Emulator:
             case 0x8A:
                 # TXA
                 disasm = "TXA"
+            case 0x8D:
+                # STA abs
+                addr = self.cpumemory.read_word(self.cpu.pc + 1)
+                disasm = f"STA ${hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 3
             case 0x8E:
                 # STX abs
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)

@@ -553,6 +553,16 @@ class CPU:
                 self.memory.write_byte(addr, self._ror(val))
 
                 self.cycles += 7
+            case 0x81:
+                # STA (indirect,x)
+                base = self.read_pc_word()
+                addr = self.memory.read_byte(
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+
+                self.memory.write_byte(addr, self.a)
+                self.cycles += 6
             case 0x85:
                 # STA zpg
                 addr = self.read_pc_byte()
@@ -581,6 +591,12 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0x8D:
+                # STA abs
+                addr = self.read_pc_word()
+
+                self.memory.write_byte(addr, self.a)
+                self.cycles += 4
             case 0x8E:
                 # STX abs
                 addr = self.read_pc_word()
@@ -590,6 +606,23 @@ class CPU:
             case 0x90:
                 # BCC rel
                 self._branch(not self.p & CARRY_FLAG)
+            case 0x91:
+                # STA (indirect),y
+                base = self.read_pc_word()
+                addr = self.memory.read_byte(
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                )
+
+                self.memory.write_byte(addr, self.a)
+                self.cycles += 6
+            case 0x95:
+                # STA zpg,x
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+
+                self.memory.write_byte(addr, self.a)
+                self.cycles += 3
             case 0x96:
                 # STX zpg,y
                 addr = (self.read_pc_byte() + self.y) & 0xFF
@@ -604,11 +637,23 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0x99:
+                # STA abs,y
+                addr = self.read_pc_word() + self.y
+
+                self.memory.write_byte(addr, self.a)
+                self.cycles += 5
             case 0x9A:
                 # TXS
                 self.sp = self.x
 
                 self.cycles += 2
+            case 0x9D:
+                # STA abs,x
+                addr = self.read_pc_word() + self.x
+
+                self.memory.write_byte(addr, self.a)
+                self.cycles += 5
             case 0xA0:
                 # LDY imm
                 imm = self.read_pc_byte()
