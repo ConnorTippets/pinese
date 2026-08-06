@@ -40,6 +40,9 @@ class Emulator:
                 imm = self.cpumemory.read_byte(self.cpu.pc + 1)
                 disasm = f"ORA #${hex(imm).upper().replace("0X", ""):>02}"
                 length = 2
+            case 0x0A:
+                # ASL a
+                disasm = "ASL A"
             case 0x10:
                 # BPL rel
                 rel = sign_convert_byte(self.cpumemory.read_byte(self.cpu.pc + 1))

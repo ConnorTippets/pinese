@@ -120,6 +120,15 @@ class CPU:
 
         return result
 
+    def _asl(self, val: int) -> int:
+        result = (val << 1) & 0xFF
+
+        self.set_flag(CARRY_FLAG, val & NEGATIVE_FLAG)
+        self.set_flag(ZERO_FLAG, result == 0)
+        self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+        return result
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -142,6 +151,15 @@ class CPU:
                 self._ora(self.memory.read_byte(self.read_pc_byte()))
 
                 self.cycles += 3
+            case 0x06:
+                # ASL zpg
+                addr = self.read_pc_byte()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._asl(val))
+
+                self.cycles += 5
             case 0x08:
                 # PHP
                 self.push_byte(self.p | B_FLAG)
@@ -152,11 +170,25 @@ class CPU:
                 self._ora(self.read_pc_byte())
 
                 self.cycles += 2
+            case 0x0A:
+                # ASL a
+                self.a = self._asl(self.a)
+
+                self.cycles += 2
             case 0x0D:
                 # ORA abs
                 self._ora(self.memory.read_byte(self.read_pc_word()))
 
                 self.cycles += 4
+            case 0x0E:
+                # ASL abs
+                addr = self.read_pc_word()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._asl(val))
+
+                self.cycles += 6
             case 0x10:
                 # BPL rel
                 self._branch(not self.p & NEGATIVE_FLAG)
@@ -178,6 +210,15 @@ class CPU:
                 self._ora(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
 
                 self.cycles += 4
+            case 0x16:
+                # ASL zpg,x
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._asl(val))
+
+                self.cycles += 6
             case 0x18:
                 # CLC
                 self.set_flag(CARRY_FLAG, 0)
@@ -201,6 +242,15 @@ class CPU:
 
                 if not page_of(addr) == page_of(self.x):
                     self.cycles += 1
+            case 0x1E:
+                # ASL abs,x
+                addr = self.read_pc_word() + self.x
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._asl(val))
+
+                self.cycles += 7
             case 0x20:
                 # JSR abs
                 location = self.read_pc_word()
