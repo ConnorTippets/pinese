@@ -32,6 +32,15 @@ class Emulator:
         length = 1
         disasm = ""
         match opcode:
+            case 0x01:
+                # ORA (indirect,x)
+                base = self.cpumemory.read_byte(self.cpu.pc + 1)
+                addr = (
+                    self.cpumemory.read_byte((base + self.cpu.x) & 0xFF)
+                    + self.cpumemory.read_byte((base + self.cpu.x + 1) & 0xFF) * 256
+                )
+                disasm = f"ORA (${hex(base).upper().replace("0X", ""):>02},X) @ {hex((base + self.cpu.x) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0x08:
                 # PHP
                 disasm = "PHP"
@@ -57,6 +66,15 @@ class Emulator:
                 addr = self.cpumemory.read_word(self.cpu.pc + 1)
                 disasm = f"JSR ${hex(addr).upper().replace("0X", ""):>04}"
                 length = 3
+            case 0x21:
+                # AND (indirect,x)
+                base = self.cpumemory.read_byte(self.cpu.pc + 1)
+                addr = (
+                    self.cpumemory.read_byte((base + self.cpu.x) & 0xFF)
+                    + self.cpumemory.read_byte((base + self.cpu.x + 1) & 0xFF) * 256
+                )
+                disasm = f"AND (${hex(base).upper().replace("0X", ""):>02},X) @ {hex((base + self.cpu.x) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0x24:
                 # BIT zpg
                 addr = self.cpumemory.read_byte(self.cpu.pc + 1)
