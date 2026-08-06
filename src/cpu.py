@@ -347,7 +347,7 @@ class CPU:
             case 0x30:
                 # BMI rel
                 self._branch(self.p & NEGATIVE_FLAG)
-            case 0x25:
+            case 0x35:
                 # AND zpg,x
                 self._and(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
                 self.cycles += 4
@@ -378,7 +378,7 @@ class CPU:
                 self.set_flag(CARRY_FLAG, 1)
 
                 self.cycles += 2
-            case 0x3D:
+            case 0x39:
                 # AND abs,y
                 addr = self.read_pc_word()
                 self._and(self.memory.read_byte(addr + self.y))
