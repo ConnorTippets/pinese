@@ -279,16 +279,17 @@ class CPU:
                 self._branch(not self.p & NEGATIVE_FLAG)
             case 0x11:
                 # ORA (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._ora(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._ora(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0x15:
                 # ORA zpg,x
@@ -420,16 +421,17 @@ class CPU:
                 self.cycles += 4
             case 0x31:
                 # AND (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._and(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._and(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0x36:
                 # ROL zpg,x
@@ -549,16 +551,17 @@ class CPU:
                 self._branch(not self.p & OVERFLOW_FLAG)
             case 0x51:
                 # EOR (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._eor(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._eor(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0x56:
                 # LSR zpg,x
@@ -661,16 +664,17 @@ class CPU:
                 self._branch(self.p & OVERFLOW_FLAG)
             case 0x71:
                 # ADC (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._adc(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._adc(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0x75:
                 # ADC zpg,x
@@ -783,13 +787,12 @@ class CPU:
                 self._branch(not self.p & CARRY_FLAG)
             case 0x91:
                 # STA (indirect),y
-                base = self.read_pc_word()
-                addr = self.memory.read_byte(
+                base = self.read_pc_byte()
+                base_mutated = (
                     self.memory.read_byte(base)
                     + self.memory.read_byte((base + 1) & 0xFF) * 256
-                    + self.y
                 )
-
+                addr = (base_mutated + self.y) & 0xFFFF
                 self.memory.write_byte(addr, self.a)
                 self.cycles += 6
             case 0x94:
@@ -904,16 +907,17 @@ class CPU:
                 self._branch(self.p & CARRY_FLAG)
             case 0xB1:
                 # LDA (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._lda(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._lda(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0xB4:
                 # LDY zpg,x
@@ -1017,16 +1021,17 @@ class CPU:
                 self._branch(not self.p & ZERO_FLAG)
             case 0xD1:
                 # CMP (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._cmp(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._cmp(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0xD5:
                 # cmp zpg,x
@@ -1126,16 +1131,17 @@ class CPU:
                 self._branch(self.p & ZERO_FLAG)
             case 0xF1:
                 # SBC (indirect),y
-                addr = self.read_pc_byte()
-                base = (
-                    self.memory.read_byte(addr)
-                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
                 )
-                self._sbc(self.memory.read_byte(base + self.y))
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._sbc(self.memory.read_byte(addr))
 
                 self.cycles += 5
 
-                if not page_of(base) == page_of(base + self.y):
+                if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
             case 0xF5:
                 # SBC zpg,x
