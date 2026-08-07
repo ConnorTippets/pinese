@@ -189,6 +189,11 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.x == val)
         self.set_flag(NEGATIVE_FLAG, (self.x - val) & NEGATIVE_FLAG)
 
+    def _cpy(self, val: int):
+        self.set_flag(CARRY_FLAG, self.y >= val)
+        self.set_flag(ZERO_FLAG, self.y == val)
+        self.set_flag(NEGATIVE_FLAG, (self.y - val) & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -914,12 +919,7 @@ class CPU:
                     self.cycles += 1
             case 0xC0:
                 # CPY imm
-                imm = self.read_pc_byte()
-
-                self.set_flag(CARRY_FLAG, self.y >= imm)
-                self.set_flag(ZERO_FLAG, self.y == imm)
-                self.set_flag(NEGATIVE_FLAG, (self.y - imm) & NEGATIVE_FLAG)
-
+                self._cpy(self.read_pc_byte())
                 self.cycles += 2
             case 0xC1:
                 # CMP (indirect,x)
@@ -932,6 +932,10 @@ class CPU:
                 )
 
                 self.cycles += 6
+            case 0xC4:
+                # CPY zpg
+                self._cpy(self.memory.read_byte(self.read_pc_byte()))
+                self.cycles += 3
             case 0xC5:
                 # CMP zpg
                 self._cmp(self.memory.read_byte(self.read_pc_byte()))
@@ -958,6 +962,10 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0xCC:
+                # CPY abs
+                self._cpy(self.memory.read_byte(self.read_pc_word()))
+                self.cycles += 4
             case 0xCD:
                 # CMP abs
                 self._cmp(self.memory.read_byte(self.read_pc_word()))
