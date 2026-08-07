@@ -147,6 +147,12 @@ class CPU:
 
         return result
 
+    def _eor(self, val: int):
+        self.a ^= val
+
+        self.set_flag(ZERO_FLAG, self.a == 0)
+        self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -417,6 +423,22 @@ class CPU:
                 self.pc = self.pop_word()
 
                 self.cycles += 6
+            case 0x41:
+                # EOR (indirect,x)
+                addr = self.read_pc_byte()
+                self._eor(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+
+                self.cycles += 6
+            case 0x45:
+                # EOR zpg
+                self._eor(self.memory.read_byte(self.read_pc_byte()))
+
+                self.cycles += 3
             case 0x46:
                 # LSR zpg
                 addr = self.read_pc_byte()
@@ -432,12 +454,8 @@ class CPU:
 
                 self.cycles += 3
             case 0x49:
-                # EOR
-                imm = self.read_pc_byte()
-                self.a ^= imm
-
-                self.set_flag(ZERO_FLAG, self.a == 0)
-                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+                # EOR imm
+                self._eor(self.read_pc_byte())
 
                 self.cycles += 2
             case 0x4A:
@@ -451,6 +469,11 @@ class CPU:
 
                 self.pc = location
                 self.cycles += 3
+            case 0x4D:
+                # EOR abs
+                self._eor(self.memory.read_byte(self.read_pc_word()))
+
+                self.cycles += 4
             case 0x4E:
                 # LSR abs
                 addr = self.read_pc_word()
@@ -463,6 +486,19 @@ class CPU:
             case 0x50:
                 # BVC rel
                 self._branch(not self.p & OVERFLOW_FLAG)
+            case 0x51:
+                # EOR (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._eor(self.memory.read_byte(base + self.y))
+
+                self.cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    self.cycles += 1
             case 0x56:
                 # LSR zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
@@ -472,6 +508,24 @@ class CPU:
                 self.memory.write_byte(addr, self._lsr(val))
 
                 self.cycles += 6
+            case 0x59:
+                # EOR abs,y
+                addr = self.read_pc_word()
+                self._eor(self.memory.read_byte(addr + self.y))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.y):
+                    self.cycles += 1
+            case 0x5D:
+                # EOR abs,x
+                addr = self.read_pc_word()
+                self._eor(self.memory.read_byte(addr + self.x))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.x):
+                    self.cycles += 1
             case 0x5E:
                 # LSR abs,x
                 addr = self.read_pc_word() + self.x

@@ -108,6 +108,15 @@ class Emulator:
             case 0x40:
                 # RTI
                 disasm = "RTI"
+            case 0x41:
+                # EOR (indirect,x)
+                base = self.cpumemory.read_byte(self.cpu.pc + 1)
+                addr = (
+                    self.cpumemory.read_byte((base + self.cpu.x) & 0xFF)
+                    + self.cpumemory.read_byte((base + self.cpu.x + 1) & 0xFF) * 256
+                )
+                disasm = f"EOR (${hex(base).upper().replace("0X", ""):>02},X) @ {hex((base + self.cpu.x) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+                length = 2
             case 0x48:
                 # PHA
                 disasm = "PHA"
