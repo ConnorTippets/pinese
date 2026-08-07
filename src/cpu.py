@@ -153,6 +153,16 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.a == 0)
         self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+    def _adc(self, val: int):
+        prev_a = self.a
+        new_a = self.a + val + (self.p & CARRY_FLAG)
+        self.a = new_a & 0xFF
+
+        self.set_flag(CARRY_FLAG, new_a > 0xFF)
+        self.set_flag(ZERO_FLAG, self.a == 0)
+        self.set_flag(OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ val) & 0x80)
+        self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -538,6 +548,31 @@ class CPU:
             case 0x60:
                 # RTS
                 self.pc = self.pop_word() + 1
+            case 0x61:
+                # ADC (indirect,x)
+                addr = self.read_pc_byte()
+                self._adc(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+
+                self.cycles += 6
+            case 0x65:
+                # ADC zpg
+                self._adc(self.memory.read_byte(self.read_pc_byte()))
+
+                self.cycles += 3
+            case 0x66:
+                # ROR zpg
+                addr = self.read_pc_byte()
+                val = self.memory.read_byte(addr)
+
+                self.memory.write_byte(addr, val)
+                self.memory.write_byte(addr, self._ror(val))
+
+                self.cycles += 5
             case 0x68:
                 # PLA
                 self.a = self.pop_byte()
@@ -548,16 +583,7 @@ class CPU:
                 self.cycles += 4
             case 0x69:
                 # ADC imm
-                imm = self.read_pc_byte()
-
-                prev_a = self.a
-                new_a = self.a + imm + (self.p & CARRY_FLAG)
-                self.a = new_a & 0xFF
-
-                self.set_flag(CARRY_FLAG, new_a > 0xFF)
-                self.set_flag(ZERO_FLAG, self.a == 0)
-                self.set_flag(OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ imm) & 0x80)
-                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+                self._adc(self.read_pc_byte())
 
                 self.cycles += 2
             case 0x6A:
@@ -565,15 +591,11 @@ class CPU:
                 self.a = self._ror(self.a)
 
                 self.cycles += 2
-            case 0x66:
-                # ROR zpg
-                addr = self.read_pc_byte()
-                val = self.memory.read_byte(addr)
+            case 0x6D:
+                # ADC abs
+                self._adc(self.memory.read_byte(self.read_pc_word()))
 
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._ror(val))
-
-                self.cycles += 5
+                self.cycles += 4
             case 0x6E:
                 # ROR abs
                 addr = self.read_pc_word()
@@ -586,6 +608,24 @@ class CPU:
             case 0x70:
                 # BVS rel
                 self._branch(self.p & OVERFLOW_FLAG)
+            case 0x71:
+                # ADC (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._adc(self.memory.read_byte(base + self.y))
+
+                self.cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    self.cycles += 1
+            case 0x75:
+                # ADC zpg,x
+                self._adc(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+
+                self.cycles += 4
             case 0x76:
                 # ROR zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
@@ -598,6 +638,24 @@ class CPU:
             case 0x78:
                 # SEI
                 new_interrupts_state = "disabled"
+            case 0x79:
+                # ADC abs,y
+                addr = self.read_pc_word()
+                self._adc(self.memory.read_byte(addr + self.y))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.y):
+                    self.cycles += 1
+            case 0x7D:
+                # ADC abs,x
+                addr = self.read_pc_word()
+                self._adc(self.memory.read_byte(addr + self.x))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.x):
+                    self.cycles += 1
             case 0x7E:
                 # ROR abs,x
                 addr = self.read_pc_word() + self.x
