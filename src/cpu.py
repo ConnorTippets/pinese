@@ -163,6 +163,11 @@ class CPU:
         self.set_flag(OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ val) & 0x80)
         self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+    def _cmp(self, val: int):
+        self.set_flag(CARRY_FLAG, self.a >= val)
+        self.set_flag(ZERO_FLAG, self.a == val)
+        self.set_flag(NEGATIVE_FLAG, (self.a - val) & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -877,6 +882,22 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, (self.y - imm) & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0xC1:
+                # CMP (indirect,x)
+                addr = self.read_pc_byte()
+                self._cmp(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+
+                self.cycles += 6
+            case 0xC5:
+                # CMP zpg
+                self._cmp(self.memory.read_byte(self.read_pc_byte()))
+
+                self.cycles += 3
             case 0xC8:
                 # INY
                 self.y = (self.y + 1) & 0xFF
@@ -887,11 +908,7 @@ class CPU:
                 self.cycles += 2
             case 0xC9:
                 # CMP imm
-                imm = self.read_pc_byte()
-
-                self.set_flag(CARRY_FLAG, self.a >= imm)
-                self.set_flag(ZERO_FLAG, self.a == imm)
-                self.set_flag(NEGATIVE_FLAG, (self.a - imm) & NEGATIVE_FLAG)
+                self._cmp(self.read_pc_byte())
 
                 self.cycles += 2
             case 0xCA:
@@ -902,14 +919,55 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0xCD:
+                # CMP abs
+                self._cmp(self.memory.read_byte(self.read_pc_word()))
+
+                self.cycles += 4
             case 0xD0:
                 # BNE rel
                 self._branch(not self.p & ZERO_FLAG)
+            case 0xD1:
+                # CMP (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._cmp(self.memory.read_byte(base + self.y))
+
+                self.cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    self.cycles += 1
+            case 0xD5:
+                # cmp zpg,x
+                self._cmp(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+
+                self.cycles += 4
             case 0xD8:
                 # CLD
                 self.set_flag(DECIMAL_FLAG, 0)
 
                 self.cycles += 2
+            case 0xD9:
+                # CMP abs,y
+                addr = self.read_pc_word()
+                self._cmp(self.memory.read_byte(addr + self.y))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.y):
+                    self.cycles += 1
+            case 0xDD:
+                # CMP abs,x
+                addr = self.read_pc_word()
+                self._cmp(self.memory.read_byte(addr + self.x))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.x):
+                    self.cycles += 1
             case 0xE0:
                 # CPX imm
                 imm = self.read_pc_byte()
