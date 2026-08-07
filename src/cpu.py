@@ -184,6 +184,11 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.a == val)
         self.set_flag(NEGATIVE_FLAG, (self.a - val) & NEGATIVE_FLAG)
 
+    def _cpx(self, val: int):
+        self.set_flag(CARRY_FLAG, self.x >= val)
+        self.set_flag(ZERO_FLAG, self.x == val)
+        self.set_flag(NEGATIVE_FLAG, (self.x - val) & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -1004,12 +1009,7 @@ class CPU:
                     self.cycles += 1
             case 0xE0:
                 # CPX imm
-                imm = self.read_pc_byte()
-
-                self.set_flag(CARRY_FLAG, self.x >= imm)
-                self.set_flag(ZERO_FLAG, self.x == imm)
-                self.set_flag(NEGATIVE_FLAG, (self.x - imm) & NEGATIVE_FLAG)
-
+                self._cpx(self.read_pc_byte())
                 self.cycles += 2
             case 0xE1:
                 # SBC (indirect,x)
@@ -1022,6 +1022,10 @@ class CPU:
                 )
 
                 self.cycles += 6
+            case 0xE4:
+                # CPX zpg
+                self._cpx(self.memory.read_byte(self.read_pc_byte()))
+                self.cycles += 3
             case 0xE5:
                 # SBC zpg
                 self._sbc(self.memory.read_byte(self.read_pc_byte()))
@@ -1043,6 +1047,10 @@ class CPU:
             case 0xEA:
                 # NOP
                 self.cycles += 2
+            case 0xEC:
+                # CPX abs
+                self._cpx(self.memory.read_byte(self.read_pc_word()))
+                self.cycles += 4
             case 0xED:
                 # SBC abs
                 self._sbc(self.memory.read_byte(self.read_pc_word()))
