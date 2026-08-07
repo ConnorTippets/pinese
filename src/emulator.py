@@ -109,10 +109,10 @@ class Emulator:
         self.length = 2
 
     def disasm_indirect(self, instruction: str):
-        base = self.cpumemory.read_byte(self.cpu.pc + 1)
-        addr = self.cpumemory.read_byte(base)
+        base = self.cpumemory.read_word(self.cpu.pc + 1)
+        addr = self.cpumemory.read_word(base)
         self.disasm = f"{instruction} (${hex(base).upper().replace("0X", ""):>04}) = {hex(addr).upper().replace("0X", ""):>04}"
-        self.length = 2
+        self.length = 3
 
     def print_log_line(self):
         opcode = self.cpumemory.read_byte(self.cpu.pc)
