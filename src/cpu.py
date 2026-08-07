@@ -696,6 +696,12 @@ class CPU:
 
                 self.memory.write_byte(addr, self.a)
                 self.cycles += 6
+            case 0x84:
+                # STY zpg
+                addr = self.read_pc_byte()
+
+                self.memory.write_byte(addr, self.y)
+                self.cycles += 3
             case 0x85:
                 # STA zpg
                 addr = self.read_pc_byte()
@@ -724,6 +730,12 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.x & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0x8C:
+                # STY abs
+                addr = self.read_pc_word()
+
+                self.memory.write_byte(addr, self.y)
+                self.cycles += 4
             case 0x8D:
                 # STA abs
                 addr = self.read_pc_word()
@@ -750,6 +762,12 @@ class CPU:
 
                 self.memory.write_byte(addr, self.a)
                 self.cycles += 6
+            case 0x94:
+                # STY zpg,x
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+
+                self.memory.write_byte(addr, self.y)
+                self.cycles += 3
             case 0x95:
                 # STA zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
