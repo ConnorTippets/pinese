@@ -93,6 +93,12 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.a == 0)
         self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+    def _ldy(self, val: int):
+        self.y = val
+
+        self.set_flag(ZERO_FLAG, self.y == 0)
+        self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
+
     def _branch(self, condition):
         rel = sign_convert_byte(self.read_pc_byte())
 
@@ -783,11 +789,7 @@ class CPU:
                 self.cycles += 5
             case 0xA0:
                 # LDY imm
-                imm = self.read_pc_byte()
-
-                self.y = imm
-                self.set_flag(ZERO_FLAG, self.y == 0)
-                self.set_flag(NEGATIVE_FLAG, self.y & NEGATIVE_FLAG)
+                self._ldy(self.read_pc_byte())
 
                 self.cycles += 2
             case 0xA1:
@@ -803,18 +805,19 @@ class CPU:
                 self.cycles += 6
             case 0xA2:
                 # LDX imm
-                imm = self.read_pc_byte()
-                self._ldx(imm)
+                self._ldx(self.read_pc_byte())
                 self.cycles += 2
+            case 0xA4:
+                # LDY zpg
+                self._ldy(self.memory.read_byte(self.read_pc_byte()))
+                self.cycles += 3
             case 0xA6:
                 # LDX zpg
-                addr = self.read_pc_byte()
-                self._ldx(self.memory.read_byte(addr))
+                self._ldx(self.memory.read_byte(self.read_pc_byte()))
                 self.cycles += 3
             case 0xA5:
                 # LDA zpg
-                addr = self.read_pc_byte()
-                self._lda(self.memory.read_byte(addr))
+                self._lda(self.memory.read_byte(self.read_pc_byte()))
                 self.cycles += 3
             case 0xA8:
                 # TAY
@@ -826,17 +829,7 @@ class CPU:
                 self.cycles += 2
             case 0xA9:
                 # LDA imm
-                imm = self.read_pc_byte()
-                self._lda(imm)
-                self.cycles += 2
-            case 0xA9:
-                # LDA imm
-                imm = self.read_pc_byte()
-
-                self.a = imm
-                self.set_flag(ZERO_FLAG, self.a == 0)
-                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
-
+                self._lda(self.read_pc_byte())
                 self.cycles += 2
             case 0xAA:
                 # TAX
@@ -846,23 +839,28 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
                 self.cycles += 2
+            case 0xAC:
+                # LDY abs
+                self._ldy(self.memory.read_byte(self.read_pc_word()))
+                self.cycles += 4
             case 0xAD:
                 # LDA abs
-                addr = self.read_pc_word()
-                self._lda(self.memory.read_byte(addr))
+                self._lda(self.memory.read_byte(self.read_pc_word()))
                 self.cycles += 4
             case 0xAE:
                 # LDX abs
-                addr = self.read_pc_word()
-                self._ldx(self.memory.read_byte(addr))
+                self._ldx(self.memory.read_byte(self.read_pc_word()))
                 self.cycles += 4
             case 0xB0:
                 # BCS rel
                 self._branch(self.p & CARRY_FLAG)
+            case 0xB4:
+                # LDY zpg,x
+                self._ldy(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+                self.cycles += 3
             case 0xB6:
                 # LDX zpg,y
-                addr = self.read_pc_byte()
-                self._ldx(self.memory.read_byte((addr + self.y) & 0xFF))
+                self._ldx(self.memory.read_byte((self.read_pc_byte() + self.y) & 0xFF))
                 self.cycles += 4
             case 0xB8:
                 # CLV
@@ -875,6 +873,14 @@ class CPU:
 
                 self.set_flag(ZERO_FLAG, self.sp == 0)
                 self.set_flag(NEGATIVE_FLAG, self.sp & NEGATIVE_FLAG)
+            case 0xBC:
+                # LDY abs,x
+                addr = self.read_pc_word()
+                self._ldy(self.memory.read_byte(addr + self.x))
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(addr + self.x):
+                    self.cycles += 1
             case 0xBE:
                 # LDX abs,y
                 addr = self.read_pc_word()
