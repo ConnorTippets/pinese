@@ -902,6 +902,19 @@ class CPU:
             case 0xB0:
                 # BCS rel
                 self._branch(self.p & CARRY_FLAG)
+            case 0xB1:
+                # LDA (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._lda(self.memory.read_byte(base + self.y))
+
+                self.cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    self.cycles += 1
             case 0xB4:
                 # LDY zpg,x
                 self._ldy(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
