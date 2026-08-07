@@ -556,7 +556,7 @@ class CPU:
             case 0x81:
                 # STA (indirect,x)
                 base = self.read_pc_byte()
-                addr = self.memory.read_byte(
+                addr = (
                     self.memory.read_byte((base + self.x) & 0xFF)
                     + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
                 )
