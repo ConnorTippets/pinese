@@ -45,12 +45,16 @@ class Emulator:
 
     def disasm_indirect_y(self, instruction: str):
         base = self.cpumemory.read_byte(self.cpu.pc + 1)
+        base_mutated = (
+            self.cpumemory.read_byte(base)
+            + self.cpumemory.read_byte((base + 1) & 0xFF) * 256
+        )
         addr = (
             self.cpumemory.read_byte(base)
             + self.cpumemory.read_byte((base + 1) & 0xFF) * 256
             + self.cpu.y
-        )
-        self.disasm = f"{instruction} (${hex(base).upper().replace("0X", ""):>02}),Y @ {hex((base + self.cpu.y) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+        ) & 0xFFFF
+        self.disasm = f"{instruction} (${hex(base).upper().replace("0X", ""):>02}),Y = {hex(base_mutated).upper().replace("0X", ""):>04} @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 2
 
     def disasm_zpg(self, instruction: str):
