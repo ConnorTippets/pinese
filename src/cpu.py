@@ -204,6 +204,16 @@ class CPU:
         self.set_flag(ZERO_FLAG, result == 0)
         self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
 
+    def _dec(self, addr: int):
+        val = self.memory.read_byte(addr)
+        result = (val - 1) & 0xFF
+
+        self.memory.write_byte(addr, val)
+        self.memory.write_byte(addr, result)
+
+        self.set_flag(ZERO_FLAG, result == 0)
+        self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -951,6 +961,10 @@ class CPU:
                 self._cmp(self.memory.read_byte(self.read_pc_byte()))
 
                 self.cycles += 3
+            case 0xC6:
+                # DEC zpg
+                self._dec(self.read_pc_byte())
+                self.cycles += 5
             case 0xC8:
                 # INY
                 self.y = (self.y + 1) & 0xFF
@@ -981,6 +995,10 @@ class CPU:
                 self._cmp(self.memory.read_byte(self.read_pc_word()))
 
                 self.cycles += 4
+            case 0xCE:
+                # DEC abs
+                self._dec(self.read_pc_word())
+                self.cycles += 6
             case 0xD0:
                 # BNE rel
                 self._branch(not self.p & ZERO_FLAG)
@@ -1002,6 +1020,10 @@ class CPU:
                 self._cmp(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
 
                 self.cycles += 4
+            case 0xD6:
+                # DEC zpg,x
+                self._dec((self.read_pc_byte() + self.x) & 0xFF)
+                self.cycles += 6
             case 0xD8:
                 # CLD
                 self.set_flag(DECIMAL_FLAG, 0)
@@ -1025,6 +1047,10 @@ class CPU:
 
                 if not page_of(addr) == page_of(self.x):
                     self.cycles += 1
+            case 0xDE:
+                # DEC abs,x
+                self._dec(self.read_pc_word() + self.x)
+                self.cycles += 7
             case 0xE0:
                 # CPX imm
                 self._cpx(self.read_pc_byte())
