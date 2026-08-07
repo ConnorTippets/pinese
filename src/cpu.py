@@ -194,6 +194,16 @@ class CPU:
         self.set_flag(ZERO_FLAG, self.y == val)
         self.set_flag(NEGATIVE_FLAG, (self.y - val) & NEGATIVE_FLAG)
 
+    def _inc(self, addr: int):
+        val = self.memory.read_byte(addr)
+        result = (val + 1) & 0xFF
+
+        self.memory.write_byte(addr, val)
+        self.memory.write_byte(addr, result)
+
+        self.set_flag(ZERO_FLAG, result == 0)
+        self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
     def step(self) -> int:
         opcode = self.read_pc_byte()
         self.cycles = 0
@@ -1039,6 +1049,10 @@ class CPU:
                 self._sbc(self.memory.read_byte(self.read_pc_byte()))
 
                 self.cycles += 3
+            case 0xE6:
+                # INC zpg
+                self._inc(self.read_pc_byte())
+                self.cycles += 5
             case 0xE8:
                 # INX
                 self.x = (self.x + 1) & 0xFF
@@ -1064,6 +1078,10 @@ class CPU:
                 self._sbc(self.memory.read_byte(self.read_pc_word()))
 
                 self.cycles += 4
+            case 0xEE:
+                # INC abs
+                self._inc(self.read_pc_word())
+                self.cycles += 6
             case 0xF0:
                 # BEQ rel
                 self._branch(self.p & ZERO_FLAG)
@@ -1085,6 +1103,10 @@ class CPU:
                 self._sbc(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
 
                 self.cycles += 4
+            case 0xF6:
+                # INC zpg,x
+                self._inc((self.read_pc_byte() + self.x) & 0xFF)
+                self.cycles += 6
             case 0xF8:
                 # SED
                 self.set_flag(DECIMAL_FLAG, 1)
@@ -1108,6 +1130,10 @@ class CPU:
 
                 if not page_of(addr) == page_of(self.x):
                     self.cycles += 1
+            case 0xFE:
+                # INC abs,x
+                self._inc(self.read_pc_word() + self.x)
+                self.cycles += 7
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 
