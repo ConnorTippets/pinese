@@ -163,6 +163,16 @@ class CPU:
         self.set_flag(OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ val) & 0x80)
         self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
 
+    def _sbc(self, val: int):
+        prev_a = self.a
+        new_a = self.a + (~val) + (self.p & CARRY_FLAG)
+        self.a = new_a & 0xFF
+
+        self.set_flag(CARRY_FLAG, not new_a < 0x00)
+        self.set_flag(ZERO_FLAG, self.a == 0)
+        self.set_flag(OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ (~val)) & 0x80)
+        self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+
     def _cmp(self, val: int):
         self.set_flag(CARRY_FLAG, self.a >= val)
         self.set_flag(ZERO_FLAG, self.a == val)
@@ -977,9 +987,22 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, (self.x - imm) & NEGATIVE_FLAG)
 
                 self.cycles += 2
-            case 0xEA:
-                # NOP
-                self.cycles += 2
+            case 0xE1:
+                # SBC (indirect,x)
+                addr = self.read_pc_byte()
+                self._sbc(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+
+                self.cycles += 6
+            case 0xE5:
+                # SBC zpg
+                self._sbc(self.memory.read_byte(self.read_pc_byte()))
+
+                self.cycles += 3
             case 0xE8:
                 # INX
                 self.x = (self.x + 1) & 0xFF
@@ -990,28 +1013,61 @@ class CPU:
                 self.cycles += 2
             case 0xE9:
                 # SBC imm
-                imm = self.read_pc_byte()
-
-                prev_a = self.a
-                new_a = self.a + (~imm) + (self.p & CARRY_FLAG)
-                self.a = new_a & 0xFF
-
-                self.set_flag(CARRY_FLAG, not new_a < 0x00)
-                self.set_flag(ZERO_FLAG, self.a == 0)
-                self.set_flag(
-                    OVERFLOW_FLAG, (self.a ^ prev_a) & (self.a ^ (~imm)) & 0x80
-                )
-                self.set_flag(NEGATIVE_FLAG, self.a & NEGATIVE_FLAG)
+                self._sbc(self.read_pc_byte())
 
                 self.cycles += 2
+            case 0xEA:
+                # NOP
+                self.cycles += 2
+            case 0xED:
+                # SBC abs
+                self._sbc(self.memory.read_byte(self.read_pc_word()))
+
+                self.cycles += 4
             case 0xF0:
                 # BEQ rel
                 self._branch(self.p & ZERO_FLAG)
+            case 0xF1:
+                # SBC (indirect),y
+                addr = self.read_pc_byte()
+                base = (
+                    self.memory.read_byte(addr)
+                    + self.memory.read_byte((addr + 1) & 0xFF) * 256
+                )
+                self._sbc(self.memory.read_byte(base + self.y))
+
+                self.cycles += 5
+
+                if not page_of(base) == page_of(base + self.y):
+                    self.cycles += 1
+            case 0xF5:
+                # SBC zpg,x
+                self._sbc(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+
+                self.cycles += 4
             case 0xF8:
                 # SED
                 self.set_flag(DECIMAL_FLAG, 1)
 
                 self.cycles += 2
+            case 0xF9:
+                # SBC abs,y
+                addr = self.read_pc_word()
+                self._sbc(self.memory.read_byte(addr + self.y))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.y):
+                    self.cycles += 1
+            case 0xFD:
+                # SBC abs,x
+                addr = self.read_pc_word()
+                self._sbc(self.memory.read_byte(addr + self.x))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.x):
+                    self.cycles += 1
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 
