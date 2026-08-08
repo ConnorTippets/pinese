@@ -936,6 +936,11 @@ class CPU:
                 # LDY zpg,x
                 self._ldy(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
                 self.cycles += 3
+            case 0xB5:
+                # LDA zpg,x
+                self._lda(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+
+                self.cycles += 4
             case 0xB6:
                 # LDX zpg,y
                 self._ldx(self.memory.read_byte((self.read_pc_byte() + self.y) & 0xFF))
@@ -945,6 +950,15 @@ class CPU:
                 self.set_flag(OVERFLOW_FLAG, 0)
 
                 self.cycles += 2
+            case 0xB9:
+                # LDA abs,y
+                addr = self.read_pc_word()
+                self._lda(self.memory.read_byte(addr + self.y))
+
+                self.cycles += 4
+
+                if not page_of(addr) == page_of(self.y):
+                    self.cycles += 1
             case 0xBA:
                 # TSX
                 self.x = self.sp
