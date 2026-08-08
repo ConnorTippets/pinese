@@ -110,7 +110,15 @@ class Emulator:
 
     def disasm_indirect(self, instruction: str):
         base = self.cpumemory.read_word(self.cpu.pc + 1)
-        addr = self.cpumemory.read_word(base)
+
+        # Theres a bug with JMP indirect where page boundaries are wrong
+        if base & 0xFF == 0xFF:
+            addr = self.cpumemory.read_byte(base) | (
+                self.cpumemory.read_byte(base & 0xFF00) << 8
+            )
+        else:
+            addr = self.cpumemory.read_word(base)
+
         self.disasm = f"{instruction} (${hex(base).upper().replace("0X", ""):>04}) = {hex(addr).upper().replace("0X", ""):>04}"
         self.length = 3
 

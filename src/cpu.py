@@ -528,9 +528,8 @@ class CPU:
                 self.cycles += 2
             case 0x4C:
                 # JMP abs
-                location = self.read_pc_word()
+                self.pc = self.read_pc_word()
 
-                self.pc = location
                 self.cycles += 3
             case 0x4D:
                 # EOR abs
@@ -645,6 +644,20 @@ class CPU:
                 self.a = self._ror(self.a)
 
                 self.cycles += 2
+            case 0x6C:
+                # JMP indirect
+                b = self.read_pc_word()
+
+                # Theres a bug with JMP indirect where page boundaries are wrong
+                if b & 0xFF == 0xFF:
+                    a = self.memory.read_byte(b) | (
+                        self.memory.read_byte(b & 0xFF00) << 8
+                    )
+                else:
+                    a = self.memory.read_word(b)
+
+                self.pc = a
+                self.cycles += 5
             case 0x6D:
                 # ADC abs
                 self._adc(self.memory.read_byte(self.read_pc_word()))
