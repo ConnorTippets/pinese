@@ -93,13 +93,15 @@ class Emulator:
         self.length = 3
 
     def disasm_abs_x(self, instruction: str):
-        addr = self.cpumemory.read_word(self.cpu.pc + 1)
-        self.disasm = f"{instruction} ${hex(addr).upper().replace("0X", ""):>04},X = {hex(self.cpumemory.read_byte((addr+self.cpu.x) & 0xFF)).upper().replace("0X", ""):>02}"
+        base = self.cpumemory.read_word(self.cpu.pc + 1)
+        addr = base + self.cpu.x
+        self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>04},X @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 3
 
     def disasm_abs_y(self, instruction: str):
-        addr = self.cpumemory.read_word(self.cpu.pc + 1)
-        self.disasm = f"{instruction} ${hex(addr).upper().replace("0X", ""):>04},Y = {hex(self.cpumemory.read_byte((addr+self.cpu.y) & 0xFF)).upper().replace("0X", ""):>02}"
+        base = self.cpumemory.read_word(self.cpu.pc + 1)
+        addr = base + self.cpu.y
+        self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>04},Y @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 3
 
     def disasm_relative(self, instruction: str):
