@@ -1,11 +1,19 @@
 import sys
+import time
 
 from src.emulator import Emulator
 
 
 def main(game_rom: str):
     emu = Emulator(game_rom)
-    emu.run(log=True)
+
+    s = time.perf_counter()
+    try:
+        emu.run(log=True)
+    finally:
+        e = time.perf_counter()
+        print(f"{e-s=}", file=sys.stderr)
+        print(f"{emu.total_cycles=}", file=sys.stderr)
 
     return
 

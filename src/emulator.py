@@ -22,12 +22,15 @@ class Emulator:
         self.disasm = ""
         self.length = 1
 
+        self.total_cycles = 0
+
     def run(self, log=False):
         while True:
             if log:
                 self.print_log_line()
 
             self.cpu.step()
+            self.total_cycles += self.cpu.cycles
 
     def disasm_immediate(self, instruction: str):
         imm = self.cpumemory.read_byte(self.cpu.pc + 1)
