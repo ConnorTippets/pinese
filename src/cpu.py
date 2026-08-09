@@ -117,39 +117,59 @@ class CPU:
         self.set_flag(OVERFLOW_FLAG, val & OVERFLOW_FLAG)
         self.set_flag(NEGATIVE_FLAG, val & NEGATIVE_FLAG)
 
-    def _lsr(self, val: int) -> int:
+    def _lsr(self, addr: int) -> int:
+        val = self.memory.read_byte(addr)
+
         result = val >> 1
 
         self.set_flag(CARRY_FLAG, val & CARRY_FLAG)
         self.set_flag(ZERO_FLAG, result == 0)
         self.set_flag(NEGATIVE_FLAG, 0)
 
+        self.memory.write_byte(addr, val)
+        self.memory.write_byte(addr, result)
+
         return result
 
-    def _asl(self, val: int) -> int:
+    def _asl(self, addr: int) -> int:
+        val = self.memory.read_byte(addr)
+
         result = (val << 1) & 0xFF
 
         self.set_flag(CARRY_FLAG, val & NEGATIVE_FLAG)
         self.set_flag(ZERO_FLAG, result == 0)
         self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
 
+        self.memory.write_byte(addr, val)
+        self.memory.write_byte(addr, result)
+
         return result
 
-    def _ror(self, val: int) -> int:
+    def _ror(self, addr: int) -> int:
+        val = self.memory.read_byte(addr)
+
         result = val >> 1 | ((self.p & CARRY_FLAG) << 7)
 
         self.set_flag(CARRY_FLAG, val & CARRY_FLAG)
         self.set_flag(ZERO_FLAG, result == 0)
         self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
 
+        self.memory.write_byte(addr, val)
+        self.memory.write_byte(addr, result)
+
         return result
 
-    def _rol(self, val: int) -> int:
+    def _rol(self, addr: int) -> int:
+        val = self.memory.read_byte(addr)
+
         result = (val << 1 | (self.p & CARRY_FLAG)) & 0xFF
 
         self.set_flag(CARRY_FLAG, val & NEGATIVE_FLAG)
         self.set_flag(ZERO_FLAG, result == 0)
         self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+        self.memory.write_byte(addr, val)
+        self.memory.write_byte(addr, result)
 
         return result
 
@@ -238,12 +258,7 @@ class CPU:
                 self.cycles += 3
             case 0x06:
                 # ASL zpg
-                addr = self.read_pc_byte()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._asl(val))
-
+                self._asl(self.read_pc_byte())
                 self.cycles += 5
             case 0x08:
                 # PHP
@@ -257,7 +272,13 @@ class CPU:
                 self.cycles += 2
             case 0x0A:
                 # ASL a
-                self.a = self._asl(self.a)
+                result = (self.a << 1) & 0xFF
+
+                self.set_flag(CARRY_FLAG, self.a & NEGATIVE_FLAG)
+                self.set_flag(ZERO_FLAG, result == 0)
+                self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+                self.a = result
 
                 self.cycles += 2
             case 0x0D:
@@ -267,12 +288,7 @@ class CPU:
                 self.cycles += 4
             case 0x0E:
                 # ASL abs
-                addr = self.read_pc_word()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._asl(val))
-
+                self._asl(self.read_pc_word())
                 self.cycles += 6
             case 0x10:
                 # BPL rel
@@ -299,10 +315,7 @@ class CPU:
             case 0x16:
                 # ASL zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._asl(val))
+                self._asl(addr)
 
                 self.cycles += 6
             case 0x18:
@@ -333,10 +346,7 @@ class CPU:
             case 0x1E:
                 # ASL abs,x
                 addr = (self.read_pc_word() + self.x) & 0xFFFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._asl(val))
+                self._asl(addr)
 
                 self.cycles += 7
             case 0x20:
@@ -367,11 +377,7 @@ class CPU:
                 self.cycles += 3
             case 0x26:
                 # ROL zpg
-                addr = self.read_pc_byte()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._rol(val))
+                self._rol(self.read_pc_byte())
 
                 self.cycles += 5
             case 0x28:
@@ -394,7 +400,13 @@ class CPU:
                 self.cycles += 2
             case 0x2A:
                 # ROL a
-                self.a = self._rol(self.a)
+                result = (self.a << 1 | (self.p & CARRY_FLAG)) & 0xFF
+
+                self.set_flag(CARRY_FLAG, self.a & NEGATIVE_FLAG)
+                self.set_flag(ZERO_FLAG, result == 0)
+                self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+                self.a = result
 
                 self.cycles += 2
             case 0x2C:
@@ -407,11 +419,7 @@ class CPU:
                 self.cycles += 4
             case 0x2E:
                 # ROL abs
-                addr = self.read_pc_word()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._rol(val))
+                self._rol(self.read_pc_word())
 
                 self.cycles += 6
             case 0x30:
@@ -438,10 +446,7 @@ class CPU:
             case 0x36:
                 # ROL zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._rol(val))
+                self._rol(addr)
 
                 self.cycles += 6
             case 0x38:
@@ -470,10 +475,7 @@ class CPU:
             case 0x3E:
                 # ROL abs,x
                 addr = (self.read_pc_word() + self.x) & 0xFFFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._rol(val))
+                self._rol(addr)
 
                 self.cycles += 7
             case 0x40:
@@ -508,11 +510,7 @@ class CPU:
                 self.cycles += 3
             case 0x46:
                 # LSR zpg
-                addr = self.read_pc_byte()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._lsr(val))
+                self._lsr(self.read_pc_byte())
 
                 self.cycles += 5
             case 0x48:
@@ -527,7 +525,13 @@ class CPU:
                 self.cycles += 2
             case 0x4A:
                 # LSR a
-                self.a = self._lsr(self.a)
+                result = self.a >> 1
+
+                self.set_flag(CARRY_FLAG, self.a & CARRY_FLAG)
+                self.set_flag(ZERO_FLAG, result == 0)
+                self.set_flag(NEGATIVE_FLAG, 0)
+
+                self.a = result
 
                 self.cycles += 2
             case 0x4C:
@@ -542,11 +546,7 @@ class CPU:
                 self.cycles += 4
             case 0x4E:
                 # LSR abs
-                addr = self.read_pc_word()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._lsr(val))
+                self._lsr(self.read_pc_word())
 
                 self.cycles += 6
             case 0x50:
@@ -574,10 +574,7 @@ class CPU:
             case 0x56:
                 # LSR zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._lsr(val))
+                self._lsr(addr)
 
                 self.cycles += 6
             case 0x59:
@@ -603,10 +600,7 @@ class CPU:
             case 0x5E:
                 # LSR abs,x
                 addr = (self.read_pc_word() + self.x) & 0xFFFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._lsr(val))
+                self._lsr(addr)
 
                 self.cycles += 7
             case 0x60:
@@ -630,11 +624,7 @@ class CPU:
                 self.cycles += 3
             case 0x66:
                 # ROR zpg
-                addr = self.read_pc_byte()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._ror(val))
+                self._ror(self.read_pc_byte())
 
                 self.cycles += 5
             case 0x68:
@@ -652,7 +642,13 @@ class CPU:
                 self.cycles += 2
             case 0x6A:
                 # ROR a
-                self.a = self._ror(self.a)
+                result = self.a >> 1 | ((self.p & CARRY_FLAG) << 7)
+
+                self.set_flag(CARRY_FLAG, self.a & CARRY_FLAG)
+                self.set_flag(ZERO_FLAG, result == 0)
+                self.set_flag(NEGATIVE_FLAG, result & NEGATIVE_FLAG)
+
+                self.a = result
 
                 self.cycles += 2
             case 0x6C:
@@ -676,11 +672,7 @@ class CPU:
                 self.cycles += 4
             case 0x6E:
                 # ROR abs
-                addr = self.read_pc_word()
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._ror(val))
+                self._ror(self.read_pc_word())
 
                 self.cycles += 6
             case 0x70:
@@ -708,10 +700,7 @@ class CPU:
             case 0x76:
                 # ROR zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._ror(val))
+                self._ror(addr)
 
                 self.cycles += 6
             case 0x78:
@@ -740,10 +729,7 @@ class CPU:
             case 0x7E:
                 # ROR abs,x
                 addr = (self.read_pc_word() + self.x) & 0xFFFF
-                val = self.memory.read_byte(addr)
-
-                self.memory.write_byte(addr, val)
-                self.memory.write_byte(addr, self._ror(val))
+                self._ror(addr)
 
                 self.cycles += 7
             case 0x81:
@@ -1271,7 +1257,14 @@ class CPU:
             case 0x4B:
                 # ALR imm (undocumented)
                 self._and(self.read_pc_byte())
-                self.a = self._lsr(self.a)
+
+                result = self.a >> 1
+
+                self.set_flag(CARRY_FLAG, self.a & CARRY_FLAG)
+                self.set_flag(ZERO_FLAG, result == 0)
+                self.set_flag(NEGATIVE_FLAG, 0)
+
+                self.a = result
 
                 self.cycles += 2
             case 0x0B | 0x2B:
@@ -1392,10 +1385,6 @@ class CPU:
                 self._dec(addr)
                 val = self.memory.read_byte(addr)
                 self._cmp(val)
-
-                self.set_flag(CARRY_FLAG, self.a >= val)
-                self.set_flag(ZERO_FLAG, self.a == val)
-                self.set_flag(NEGATIVE_FLAG, (self.a - val) & NEGATIVE_FLAG)
 
                 self.cycles += 8
             case 0xC7:
@@ -1519,6 +1508,270 @@ class CPU:
                 self._inc(addr)
                 val = self.memory.read_byte(addr)
                 self._sbc(val)
+
+                self.cycles += 7
+
+            case 0x23:
+                # RLA (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 8
+            case 0x27:
+                # RLA zpg (undocumented)
+                addr = self.read_pc_byte()
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 5
+            case 0x2F:
+                # RLA abs (undocumented)
+                addr = self.read_pc_word()
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 6
+            case 0x33:
+                # RLA (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                ) & 0xFFFF
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 8
+            case 0x37:
+                # RLA zpg,x (undocumented)
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 6
+            case 0x3B:
+                # RLA abs,y (undocumented)
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 7
+            case 0x3F:
+                # RLA abs,x (undocumented)
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
+                self._rol(addr)
+                val = self.memory.read_byte(addr)
+                self._and(val)
+
+                self.cycles += 7
+
+            case 0x63:
+                # RRA (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 8
+            case 0x67:
+                # RRA zpg (undocumented)
+                addr = self.read_pc_byte()
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 5
+            case 0x6F:
+                # RRA abs (undocumented)
+                addr = self.read_pc_word()
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 6
+            case 0x73:
+                # RRA (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                ) & 0xFFFF
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 8
+            case 0x77:
+                # RRA zpg,x (undocumented)
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 6
+            case 0x7B:
+                # RRA abs,y (undocumented)
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 7
+            case 0x7F:
+                # RRA abs,x (undocumented)
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
+                self._ror(addr)
+                val = self.memory.read_byte(addr)
+                self._adc(val)
+
+                self.cycles += 7
+
+            case 0x03:
+                # SLO (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 8
+            case 0x07:
+                # SLO zpg (undocumented)
+                addr = self.read_pc_byte()
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 5
+            case 0x0F:
+                # SLO abs (undocumented)
+                addr = self.read_pc_word()
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 6
+            case 0x13:
+                # SLO (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                ) & 0xFFFF
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 8
+            case 0x17:
+                # SLO zpg,x (undocumented)
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 6
+            case 0x1B:
+                # SLO abs,y (undocumented)
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 7
+            case 0x1F:
+                # SLO abs,x (undocumented)
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
+                self._asl(addr)
+                val = self.memory.read_byte(addr)
+                self._ora(val)
+
+                self.cycles += 7
+
+            case 0x43:
+                # SRE (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
+
+                self.cycles += 8
+            case 0x47:
+                # SRE zpg (undocumented)
+                addr = self.read_pc_byte()
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
+
+                self.cycles += 5
+            case 0x4F:
+                # SRE abs (undocumented)
+                addr = self.read_pc_word()
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
+
+                self.cycles += 6
+            case 0x53:
+                # SRE (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                ) & 0xFFFF
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
+
+                self.cycles += 8
+            case 0x57:
+                # SRE zpg,x (undocumented)
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
+
+                self.cycles += 6
+            case 0x5B:
+                # SRE abs,y (undocumented)
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
+
+                self.cycles += 7
+            case 0x5F:
+                # SRE abs,x (undocumented)
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
+                self._lsr(addr)
+                val = self.memory.read_byte(addr)
+                self._eor(val)
 
                 self.cycles += 7
             case _:
