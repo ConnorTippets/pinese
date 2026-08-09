@@ -340,6 +340,38 @@ class Emulator:
             case 0xF7: self.disasm_zpg_x("ISB", undocumented = True)
             case 0xFB: self.disasm_abs_y("ISB", undocumented = True)
             case 0xFF: self.disasm_abs_x("ISB", undocumented = True)
+            
+            case 0x23: self.disasm_indirect_x("RLA", undocumented = True)
+            case 0x27: self.disasm_zpg("RLA", undocumented = True)
+            case 0x2F: self.disasm_abs("RLA", show_contents = True, undocumented = True)
+            case 0x33: self.disasm_indirect_y("RLA", undocumented = True)
+            case 0x37: self.disasm_zpg_x("RLA", undocumented = True)
+            case 0x3B: self.disasm_abs_y("RLA", undocumented = True)
+            case 0x3F: self.disasm_abs_x("RLA", undocumented = True)
+            
+            case 0x63: self.disasm_indirect_x("RRA", undocumented = True)
+            case 0x67: self.disasm_zpg("RRA", undocumented = True)
+            case 0x6F: self.disasm_abs("RRA", show_contents = True, undocumented = True)
+            case 0x73: self.disasm_indirect_y("RRA", undocumented = True)
+            case 0x77: self.disasm_zpg_x("RRA", undocumented = True)
+            case 0x7B: self.disasm_abs_y("RRA", undocumented = True)
+            case 0x7F: self.disasm_abs_x("RRA", undocumented = True)
+            
+            case 0x03: self.disasm_indirect_x("SLO", undocumented = True)
+            case 0x07: self.disasm_zpg("SLO", undocumented = True)
+            case 0x0F: self.disasm_abs("SLO", show_contents = True, undocumented = True)
+            case 0x13: self.disasm_indirect_y("SLO", undocumented = True)
+            case 0x17: self.disasm_zpg_x("SLO", undocumented = True)
+            case 0x1B: self.disasm_abs_y("SLO", undocumented = True)
+            case 0x1F: self.disasm_abs_x("SLO", undocumented = True)
+            
+            case 0x43: self.disasm_indirect_x("SRE", undocumented = True)
+            case 0x47: self.disasm_zpg("SRE", undocumented = True)
+            case 0x4F: self.disasm_abs("SRE", show_contents = True, undocumented = True)
+            case 0x53: self.disasm_indirect_y("SRE", undocumented = True)
+            case 0x57: self.disasm_zpg_x("SRE", undocumented = True)
+            case 0x5B: self.disasm_abs_y("SRE", undocumented = True)
+            case 0x5F: self.disasm_abs_x("SRE", undocumented = True)
         # fmt: on
 
         mem_bytes = " "
