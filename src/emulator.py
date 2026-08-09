@@ -39,7 +39,8 @@ class Emulator:
         self.disasm = f"{instruction} #${hex(imm).upper().replace("0X", ""):>02}"
         self.length = 2
 
-    def disasm_indirect_x(self, instruction: str):
+    def disasm_indirect_x(self, instruction: str, undocumented: bool = False):
+        self.undocumented = undocumented
         base = self.cpumemory.read_byte(self.cpu.pc + 1)
         addr = (
             self.cpumemory.read_byte((base + self.cpu.x) & 0xFF)
@@ -48,7 +49,8 @@ class Emulator:
         self.disasm = f"{instruction} (${hex(base).upper().replace("0X", ""):>02},X) @ {hex((base + self.cpu.x) & 0xFF).upper().replace("0X", ""):>02} = {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 2
 
-    def disasm_indirect_y(self, instruction: str):
+    def disasm_indirect_y(self, instruction: str, undocumented: bool = False):
+        self.undocumented = undocumented
         base = self.cpumemory.read_byte(self.cpu.pc + 1)
         base_mutated = (
             self.cpumemory.read_byte(base)
@@ -75,7 +77,8 @@ class Emulator:
         self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>02},X @ {hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 2
 
-    def disasm_zpg_y(self, instruction: str):
+    def disasm_zpg_y(self, instruction: str, undocumented: bool = False):
+        self.undocumented = undocumented
         base = self.cpumemory.read_byte(self.cpu.pc + 1)
         addr = (base + self.cpu.y) & 0xFF
         self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>02},Y @ {hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
@@ -110,7 +113,8 @@ class Emulator:
         self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>04},X @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 3
 
-    def disasm_abs_y(self, instruction: str):
+    def disasm_abs_y(self, instruction: str, undocumented: bool = False):
+        self.undocumented = undocumented
         base = self.cpumemory.read_word(self.cpu.pc + 1)
         addr = (base + self.cpu.y) & 0xFFFF
         self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>04},Y @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
@@ -303,6 +307,21 @@ class Emulator:
             case 0x1C | 0x3C | 0x5C | 0x7C | 0xDC | 0xFC: self.disasm_abs_x("NOP", undocumented = True)
             case 0x04 | 0x44 | 0x64: self.disasm_zpg("NOP", undocumented = True)
             case 0x14 | 0x34 | 0x54 | 0x74 | 0xD4 | 0xF4: self.disasm_zpg_x("NOP", undocumented = True)
+            
+            case 0x4B: self.disasm_immediate("ALR", undocumented = True)
+            case 0x0B | 0x2B: self.disasm_immediate("ANC", undocumented = True)
+            case 0x6B: self.disasm_immediate("ARR", undocumented = True)
+            case 0xCB: self.disasm_immediate("AXS", undocumented = True)
+            case 0xA3: self.disasm_indirect_x("LAX", undocumented = True)
+            case 0xA7: self.disasm_zpg("LAX", undocumented = True)
+            case 0xAF: self.disasm_abs("LAX", show_contents = True, undocumented = True)
+            case 0xB3: self.disasm_indirect_y("LAX", undocumented = True)
+            case 0xB7: self.disasm_zpg_y("LAX", undocumented = True)
+            case 0xBF: self.disasm_abs_y("LAX", undocumented = True)
+            case 0x83: self.disasm_indirect_x("SAX", undocumented = True)
+            case 0x87: self.disasm_zpg("SAX", undocumented = True)
+            case 0x8F: self.disasm_abs("SAX", show_contents = True, undocumented = True)
+            case 0x97: self.disasm_zpg_y("SAX", undocumented = True)
         # fmt: on
 
         mem_bytes = " "

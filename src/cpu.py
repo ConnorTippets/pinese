@@ -1267,6 +1267,114 @@ class CPU:
                 # This instruction has no side-effects so we can skip the read
                 self.read_pc_byte()
                 self.cycles += 4
+
+            case 0x4B:
+                # ALR imm (undocumented)
+                self._and(self.read_pc_byte())
+                self.a = self._lsr(self.a)
+
+                self.cycles += 2
+            case 0x0B | 0x2B:
+                # ANC imm (undocumented)
+                self._and(self.read_pc_byte())
+                self.set_flag(CARRY_FLAG, self.p & NEGATIVE_FLAG)
+
+                self.cycles += 2
+            case 0x6B:
+                # ARR imm (undocumented)
+                self.cycles += 2
+                raise ValueError("TODO: ARR")
+            case 0xCB:
+                # AXS imm (undocumented)
+                self.cycles += 2
+                raise ValueError("TODO: AXS")
+            case 0xA3:
+                # LAX (indirect,x) (undocumented)
+                addr = self.read_pc_byte()
+                self._lda(
+                    self.memory.read_byte(
+                        self.memory.read_byte((addr + self.x) & 0xFF)
+                        + self.memory.read_byte((addr + self.x + 1) & 0xFF) * 256
+                    )
+                )
+                self.x = self.a
+
+                self.cycles += 6
+            case 0xA7:
+                # LAX zpg (undocumented)
+                self._lda(self.memory.read_byte(self.read_pc_byte()))
+                self.x = self.a
+
+                self.cycles += 3
+            case 0xAF:
+                # LAX abs (undocumented)
+                self._lda(self.memory.read_byte(self.read_pc_word()))
+                self.x = self.a
+
+                self.cycles += 4
+            case 0xB3:
+                # LAX (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                base_mutated = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                )
+                addr = (base_mutated + self.y) & 0xFFFF
+                self._lda(self.memory.read_byte(addr))
+                self.x = self.a
+
+                self.cycles += 5
+
+                if not page_of(base_mutated) == page_of(addr):
+                    self.cycles += 1
+            case 0xB7:
+                # LAX zpg,y (undocumented)
+                base = self.read_pc_byte()
+                addr = (base + self.y) & 0xFF
+                self._lda(self.memory.read_byte(addr))
+                self.x = self.a
+
+                self.cycles += 4
+            case 0xBF:
+                # LAX abs,y (undocumented)
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._lda(self.memory.read_byte(addr))
+                self.x = self.a
+
+                self.cycles += 4
+
+                if not page_of(base) == page_of(addr):
+                    self.cycles += 1
+
+            case 0x83:
+                # SAX (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+
+                self.memory.write_byte(addr, self.a & self.x)
+
+                self.cycles += 6
+            case 0x87:
+                # SAX zpg (undocumented)
+                self.memory.write_byte(self.read_pc_byte(), self.a & self.x)
+
+                self.cycles += 3
+            case 0x8F:
+                # SAX abs (undocumented)
+                self.memory.write_byte(self.read_pc_word(), self.a & self.x)
+
+                self.cycles += 4
+            case 0x97:
+                # SAX zpg,y (undocumented)
+                self.memory.write_byte(
+                    (self.read_pc_byte() + self.y) & 0xFF, self.a & self.x
+                )
+
+                self.cycles += 4
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 
