@@ -1451,6 +1451,76 @@ class CPU:
                 self._cmp(val)
 
                 self.cycles += 7
+
+            case 0xE3:
+                # ISB (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.set_flag(CARRY_FLAG, self.a >= val)
+                self.set_flag(ZERO_FLAG, self.a == val)
+                self.set_flag(NEGATIVE_FLAG, (self.a - val) & NEGATIVE_FLAG)
+
+                self.cycles += 8
+            case 0xE7:
+                # ISB zpg (undocumented)
+                addr = self.read_pc_byte()
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.cycles += 5
+            case 0xEF:
+                # ISB abs (undocumented)
+                addr = self.read_pc_word()
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.cycles += 6
+            case 0xF3:
+                # ISB (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                ) & 0xFFFF
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.cycles += 8
+            case 0xF7:
+                # ISB zpg,x (undocumented)
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.cycles += 6
+            case 0xFB:
+                # ISB abs,y (undocumented)
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.cycles += 7
+            case 0xFF:
+                # ISB abs,x (undocumented)
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
+                self._inc(addr)
+                val = self.memory.read_byte(addr)
+                self._sbc(val)
+
+                self.cycles += 7
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 

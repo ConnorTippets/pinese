@@ -332,6 +332,14 @@ class Emulator:
             case 0xD7: self.disasm_zpg_x("DCP", undocumented = True)
             case 0xDB: self.disasm_abs_y("DCP", undocumented = True)
             case 0xDF: self.disasm_abs_x("DCP", undocumented = True)
+            
+            case 0xE3: self.disasm_indirect_x("ISB", undocumented = True)
+            case 0xE7: self.disasm_zpg("ISB", undocumented = True)
+            case 0xEF: self.disasm_abs("ISB", show_contents = True, undocumented = True)
+            case 0xF3: self.disasm_indirect_y("ISB", undocumented = True)
+            case 0xF7: self.disasm_zpg_x("ISB", undocumented = True)
+            case 0xFB: self.disasm_abs_y("ISB", undocumented = True)
+            case 0xFF: self.disasm_abs_x("ISB", undocumented = True)
         # fmt: on
 
         mem_bytes = " "
