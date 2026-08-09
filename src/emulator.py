@@ -71,7 +71,7 @@ class Emulator:
     def disasm_zpg_y(self, instruction: str):
         base = self.cpumemory.read_byte(self.cpu.pc + 1)
         addr = (base + self.cpu.y) & 0xFF
-        self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>02},X @ {hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
+        self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>02},Y @ {hex(addr).upper().replace("0X", ""):>02} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 2
 
     def disasm_implied(self, instruction: str):
