@@ -324,6 +324,14 @@ class Emulator:
             case 0x97: self.disasm_zpg_y("SAX", undocumented = True)
             
             case 0xEB: self.disasm_immediate("SBC", undocumented = True)
+            
+            case 0xC3: self.disasm_indirect_x("DCP", undocumented = True)
+            case 0xC7: self.disasm_zpg("DCP", undocumented = True)
+            case 0xCF: self.disasm_abs("DCP", show_contents = True, undocumented = True)
+            case 0xD3: self.disasm_indirect_y("DCP", undocumented = True)
+            case 0xD7: self.disasm_zpg_x("DCP", undocumented = True)
+            case 0xDB: self.disasm_abs_y("DCP", undocumented = True)
+            case 0xDF: self.disasm_abs_x("DCP", undocumented = True)
         # fmt: on
 
         mem_bytes = " "

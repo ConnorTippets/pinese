@@ -1381,6 +1381,76 @@ class CPU:
                 self._sbc(self.read_pc_byte())
 
                 self.cycles += 2
+
+            case 0xC3:
+                # DCP (indirect,x) (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte((base + self.x) & 0xFF)
+                    + self.memory.read_byte((base + self.x + 1) & 0xFF) * 256
+                )
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.set_flag(CARRY_FLAG, self.a >= val)
+                self.set_flag(ZERO_FLAG, self.a == val)
+                self.set_flag(NEGATIVE_FLAG, (self.a - val) & NEGATIVE_FLAG)
+
+                self.cycles += 8
+            case 0xC7:
+                # DCP zpg (undocumented)
+                addr = self.read_pc_byte()
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.cycles += 5
+            case 0xCF:
+                # DCP abs (undocumented)
+                addr = self.read_pc_word()
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.cycles += 6
+            case 0xD3:
+                # DCP (indirect),y (undocumented)
+                base = self.read_pc_byte()
+                addr = (
+                    self.memory.read_byte(base)
+                    + self.memory.read_byte((base + 1) & 0xFF) * 256
+                    + self.y
+                ) & 0xFFFF
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.cycles += 8
+            case 0xD7:
+                # DCP zpg,x (undocumented)
+                addr = (self.read_pc_byte() + self.x) & 0xFF
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.cycles += 6
+            case 0xDB:
+                # DCP abs,y (undocumented)
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.cycles += 7
+            case 0xDF:
+                # DCP abs,x (undocumented)
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
+                self._dec(addr)
+                val = self.memory.read_byte(addr)
+                self._cmp(val)
+
+                self.cycles += 7
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 
