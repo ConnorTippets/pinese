@@ -1236,6 +1236,37 @@ class CPU:
                 # INC abs,x
                 self._inc((self.read_pc_word() + self.x) & 0xFFFF)
                 self.cycles += 7
+
+            case 0x1A | 0x3A | 0x7A | 0xDA | 0x5A | 0xFA:
+                # NOP (undocumented)
+                self.cycles += 2
+            case 0x80 | 0x82 | 0x89 | 0xC2 | 0xE2:
+                # NOP imm (undocumented)
+                self.read_pc_byte()
+                self.cycles += 2
+            case 0x0C:
+                # IGN abs (undocumented)
+                self.memory.read_byte(self.read_pc_word())
+                self.cycles += 4
+            case 0x1C | 0x3C | 0x5C | 0x7C | 0xDC | 0xFC:
+                # NOP abs,x (undocumented)
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self.memory.read_byte(addr)
+
+                self.cycles += 4
+                if not page_of(base) == page_of(addr):
+                    self.cycles += 1
+            case 0x04 | 0x44 | 0x64:
+                # NOP zpg (undocumented)
+                # This instruction has no side-effects so we can skip the read
+                self.read_pc_byte()
+                self.cycles += 3
+            case 0x14 | 0x34 | 0x54 | 0x74 | 0xD4 | 0xF4:
+                # NOP zpg,x (undocumented)
+                # This instruction has no side-effects so we can skip the read
+                self.read_pc_byte()
+                self.cycles += 4
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 
