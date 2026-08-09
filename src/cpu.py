@@ -1375,6 +1375,12 @@ class CPU:
                 )
 
                 self.cycles += 4
+
+            case 0xEB:
+                # SBC (undocumented)
+                self._sbc(self.read_pc_byte())
+
+                self.cycles += 2
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
 

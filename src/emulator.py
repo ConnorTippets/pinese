@@ -322,6 +322,8 @@ class Emulator:
             case 0x87: self.disasm_zpg("SAX", undocumented = True)
             case 0x8F: self.disasm_abs("SAX", show_contents = True, undocumented = True)
             case 0x97: self.disasm_zpg_y("SAX", undocumented = True)
+            
+            case 0xEB: self.disasm_immediate("SBC", undocumented = True)
         # fmt: on
 
         mem_bytes = " "
