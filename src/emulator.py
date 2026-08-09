@@ -94,13 +94,13 @@ class Emulator:
 
     def disasm_abs_x(self, instruction: str):
         base = self.cpumemory.read_word(self.cpu.pc + 1)
-        addr = base + self.cpu.x
+        addr = (base + self.cpu.x) & 0xFFFF
         self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>04},X @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 3
 
     def disasm_abs_y(self, instruction: str):
         base = self.cpumemory.read_word(self.cpu.pc + 1)
-        addr = base + self.cpu.y
+        addr = (base + self.cpu.y) & 0xFFFF
         self.disasm = f"{instruction} ${hex(base).upper().replace("0X", ""):>04},Y @ {hex(addr).upper().replace("0X", ""):>04} = {hex(self.cpumemory.read_byte(addr)).upper().replace("0X", ""):>02}"
         self.length = 3
 

@@ -312,25 +312,27 @@ class CPU:
                 self.cycles += 2
             case 0x19:
                 # ORA abs,y
-                addr = self.read_pc_word()
-                self._ora(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._ora(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x1D:
                 # ORA abs,x
-                addr = self.read_pc_word()
-                self._ora(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._ora(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x1E:
                 # ASL abs,x
-                addr = self.read_pc_word() + self.x
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
                 val = self.memory.read_byte(addr)
 
                 self.memory.write_byte(addr, val)
@@ -449,23 +451,25 @@ class CPU:
                 self.cycles += 2
             case 0x39:
                 # AND abs,y
-                addr = self.read_pc_word()
-                self._and(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._and(self.memory.read_byte(addr))
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(addr + self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x3D:
                 # AND abs,x
-                addr = self.read_pc_word()
-                self._and(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._and(self.memory.read_byte(addr))
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(addr + self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x3E:
                 # ROL abs,x
-                addr = self.read_pc_word() + self.x
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
                 val = self.memory.read_byte(addr)
 
                 self.memory.write_byte(addr, val)
@@ -562,6 +566,11 @@ class CPU:
 
                 if not page_of(base_mutated) == page_of(addr):
                     self.cycles += 1
+            case 0x55:
+                # EOR zpg,x
+                self._eor(self.memory.read_byte((self.read_pc_byte() + self.x) & 0xFF))
+
+                self.cycles += 4
             case 0x56:
                 # LSR zpg,x
                 addr = (self.read_pc_byte() + self.x) & 0xFF
@@ -573,25 +582,27 @@ class CPU:
                 self.cycles += 6
             case 0x59:
                 # EOR abs,y
-                addr = self.read_pc_word()
-                self._eor(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._eor(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x5D:
                 # EOR abs,x
-                addr = self.read_pc_word()
-                self._eor(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._eor(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x5E:
                 # LSR abs,x
-                addr = self.read_pc_word() + self.x
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
                 val = self.memory.read_byte(addr)
 
                 self.memory.write_byte(addr, val)
@@ -708,25 +719,27 @@ class CPU:
                 new_interrupts_state = "disabled"
             case 0x79:
                 # ADC abs,y
-                addr = self.read_pc_word()
-                self._adc(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._adc(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x7D:
                 # ADC abs,x
-                addr = self.read_pc_word()
-                self._adc(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFF
+                self._adc(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0x7E:
                 # ROR abs,x
-                addr = self.read_pc_word() + self.x
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
                 val = self.memory.read_byte(addr)
 
                 self.memory.write_byte(addr, val)
@@ -836,7 +849,7 @@ class CPU:
                 self.cycles += 2
             case 0x99:
                 # STA abs,y
-                addr = self.read_pc_word() + self.y
+                addr = (self.read_pc_word() + self.y) & 0xFFFF
 
                 self.memory.write_byte(addr, self.a)
                 self.cycles += 5
@@ -847,7 +860,7 @@ class CPU:
                 self.cycles += 2
             case 0x9D:
                 # STA abs,x
-                addr = self.read_pc_word() + self.x
+                addr = (self.read_pc_word() + self.x) & 0xFFFF
 
                 self.memory.write_byte(addr, self.a)
                 self.cycles += 5
@@ -952,12 +965,13 @@ class CPU:
                 self.cycles += 2
             case 0xB9:
                 # LDA abs,y
-                addr = self.read_pc_word()
-                self._lda(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._lda(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xBA:
                 # TSX
@@ -967,19 +981,21 @@ class CPU:
                 self.set_flag(NEGATIVE_FLAG, self.sp & NEGATIVE_FLAG)
             case 0xBC:
                 # LDY abs,x
-                addr = self.read_pc_word()
-                self._ldy(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._ldy(self.memory.read_byte(addr))
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(addr + self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xBE:
                 # LDX abs,y
-                addr = self.read_pc_word()
-                self._ldx(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._ldx(self.memory.read_byte(addr))
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(addr + self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xC0:
                 # CPY imm
@@ -1076,25 +1092,27 @@ class CPU:
                 self.cycles += 2
             case 0xD9:
                 # CMP abs,y
-                addr = self.read_pc_word()
-                self._cmp(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._cmp(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xDD:
                 # CMP abs,x
-                addr = self.read_pc_word()
-                self._cmp(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._cmp(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xDE:
                 # DEC abs,x
-                self._dec(self.read_pc_word() + self.x)
+                self._dec((self.read_pc_word() + self.x) & 0xFFFF)
                 self.cycles += 7
             case 0xE0:
                 # CPX imm
@@ -1186,25 +1204,27 @@ class CPU:
                 self.cycles += 2
             case 0xF9:
                 # SBC abs,y
-                addr = self.read_pc_word()
-                self._sbc(self.memory.read_byte(addr + self.y))
+                base = self.read_pc_word()
+                addr = (base + self.y) & 0xFFFF
+                self._sbc(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.y):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xFD:
                 # SBC abs,x
-                addr = self.read_pc_word()
-                self._sbc(self.memory.read_byte(addr + self.x))
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._sbc(self.memory.read_byte(addr))
 
                 self.cycles += 4
 
-                if not page_of(addr) == page_of(self.x):
+                if not page_of(base) == page_of(addr):
                     self.cycles += 1
             case 0xFE:
                 # INC abs,x
-                self._inc(self.read_pc_word() + self.x)
+                self._inc((self.read_pc_word() + self.x) & 0xFFFF)
                 self.cycles += 7
             case _:
                 raise ValueError(f"unknown opcode: {hex(opcode)}")
