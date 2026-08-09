@@ -988,6 +988,16 @@ class CPU:
 
                 if not page_of(base) == page_of(addr):
                     self.cycles += 1
+            case 0xBD:
+                # LDA abs,x
+                base = self.read_pc_word()
+                addr = (base + self.x) & 0xFFFF
+                self._lda(self.memory.read_byte(addr))
+
+                self.cycles += 4
+
+                if not page_of(base) == page_of(addr):
+                    self.cycles += 1
             case 0xBE:
                 # LDX abs,y
                 base = self.read_pc_word()
